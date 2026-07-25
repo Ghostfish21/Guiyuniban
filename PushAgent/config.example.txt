@@ -1,0 +1,4 @@
+openai_api_key=请填入你的_OpenAI_API_Key
+openai_model=gpt-4.1-mini
+notion_token=请填入你的_Notion_Integration_Token
+notion_task_category_page_id=请填入任务分类页面ID

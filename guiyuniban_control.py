@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import argparse
 from pathlib import Path
@@ -46,6 +46,9 @@ UNCOMMIT_FILE = DATA_DIR / "uncommit_tasks.txt"
 # commit 预览结果，log commit 生成，log push 使用
 COMMIT_PREVIEW_FILE = DATA_DIR / "commit_preview.txt"
 
+# 任务排序编号的下一个可用值。log indexreset 会把它重置为 10000。
+TASK_INDEX_FILE = DATA_DIR / "task_index.txt"
+
 # 配置文件，后续可以放 Notion page id、OpenAI key、活跃日边界等
 CONFIG_FILE = DATA_DIR / "config.txt"
 
@@ -90,8 +93,22 @@ HELP_TEXT = """
   log commit
       整理所有未 commit 任务，输出预览
 
+  log chat 中文指令
+      让 LLM 按中文指令修改 commit 预览，逐条 y/n 审核后覆盖 commit_preview.txt
+      例如: log chat 把周三的写代码任务的类别改成 Work
+
   log push
       将 commit 结果同步至 Notion
+
+  log check
+      检查即将 push 的 committed 任务是否有时间重叠 / 持续时间不一致；
+      有问题时自动打开图形编辑面板
+
+  log edit
+      直接打开图形编辑面板，编辑 committed 任务（时间轴 + 逐条修正）
+
+  log indexreset
+      将新任务编号重置为 10000
 """
 
 
@@ -172,7 +189,11 @@ def print_app_help() -> None:
     commands.add_row("log cont", "[任务名]", "写任务名时按相似度继续；不写时继续最近一次 log end 的任务")
     commands.add_row("log end", "[时间]", "结束当前任务；不写时间时使用当前系统时间")
     commands.add_row("log commit", "", "整理所有未 commit 任务，并生成预览")
+    commands.add_row("log chat", "中文指令", "让 LLM 按中文指令修改 commit 预览，逐条 y/n 审核")
     commands.add_row("log push", "", "把 commit 结果同步到 Notion")
+    commands.add_row("log check", "", "检查 committed 任务重叠/持续不一致，有问题就开编辑面板")
+    commands.add_row("log edit", "", "打开图形面板编辑 committed 任务（时间轴 + 逐条修正）")
+    commands.add_row("log indexreset", "", "把下一个新任务编号重置为 10000")
     console.print(commands)
 
     console.print()
@@ -195,6 +216,7 @@ def print_app_help() -> None:
                     ("数据目录", f"[path]{DATA_DIR}[/path]"),
                     ("未提交任务", f"[path]{UNCOMMIT_FILE.name}[/path]"),
                     ("commit 预览", f"[path]{COMMIT_PREVIEW_FILE.name}[/path]"),
+                    ("任务编号", f"[path]{TASK_INDEX_FILE.name}[/path]"),
                     ("配置文件", f"[path]{CONFIG_FILE.name}[/path]"),
                 ]
             ),
@@ -255,6 +277,9 @@ def ensure_runtime_files() -> None:
     if not COMMIT_PREVIEW_FILE.exists():
         COMMIT_PREVIEW_FILE.write_text("", encoding="utf-8")
 
+    if not TASK_INDEX_FILE.exists():
+        TASK_INDEX_FILE.write_text("10000", encoding="utf-8")
+
     if not CONFIG_FILE.exists():
         CONFIG_FILE.write_text(
             "\n".join(
@@ -283,6 +308,7 @@ def build_context() -> dict[str, str]:
         "data_dir": str(DATA_DIR),
         "uncommit_file": str(UNCOMMIT_FILE),
         "commit_preview_file": str(COMMIT_PREVIEW_FILE),
+        "task_index_file": str(TASK_INDEX_FILE),
         "config_file": str(CONFIG_FILE),
     }
 
@@ -377,10 +403,48 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=_formatter_class(),
     )
 
+    # log chat 中文指令
+    parser_chat = subparsers.add_parser(
+        "chat",
+        help="让 LLM 按中文指令修改 commit 预览，逐条 y/n 审核",
+        allow_abbrev=False,
+        formatter_class=_formatter_class(),
+    )
+    parser_chat.add_argument(
+        "instruction_parts",
+        nargs="+",
+        metavar="指令",
+        help="中文修改指令，例如: log chat 把周三的写代码任务的类别改成 Work",
+    )
+
     # log push
     subparsers.add_parser(
         "push",
         help="将 commit 结果同步到 Notion",
+        allow_abbrev=False,
+        formatter_class=_formatter_class(),
+    )
+
+    # log check
+    subparsers.add_parser(
+        "check",
+        help="检查即将 push 的 committed 任务是否有时间重叠 / 持续时间不一致；有问题则打开编辑面板",
+        allow_abbrev=False,
+        formatter_class=_formatter_class(),
+    )
+
+    # log edit
+    subparsers.add_parser(
+        "edit",
+        help="打开图形编辑面板，编辑 committed 任务（时间轴 + 逐条修正）",
+        allow_abbrev=False,
+        formatter_class=_formatter_class(),
+    )
+
+    # log indexreset
+    subparsers.add_parser(
+        "indexreset",
+        help="将新任务编号重置为 10000",
         allow_abbrev=False,
         formatter_class=_formatter_class(),
     )
@@ -440,12 +504,39 @@ def dispatch(args: argparse.Namespace, context: dict[str, str]) -> int:
             print_commit_preview_if_available()
         return code
 
+    if args.command == "chat":
+        from chat import chat_task
+
+        instruction = join_free_text(args.instruction_parts)
+        if not instruction:
+            print_status("error", "chat 指令需要中文指令", stderr=True)
+            return 2
+        return chat_task(instruction=instruction, context=context)
+
     if args.command == "push":
         from summary import push_tasks
 
         code = push_tasks(context=context)
         if code == 0:
             print_status("success", "已同步到 Notion")
+        return code
+
+    if args.command == "check":
+        from taskeditor import check_task
+
+        return check_task(context=context)
+
+    if args.command == "edit":
+        from taskeditor import edit_task
+
+        return edit_task(context=context)
+
+    if args.command == "indexreset":
+        from summary import reset_task_index
+
+        code = reset_task_index(context=context)
+        if code == 0:
+            print_status("success", "任务编号已重置", [f"下一个新任务编号：10000", f"文件：{TASK_INDEX_FILE}"])
         return code
 
     print_app_help()

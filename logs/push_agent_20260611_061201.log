@@ -1,0 +1,602 @@
+
+[2026-06-11T06:12:01] [Agent] 初始化 Agent
+{
+  "configFile": "C:\\Users\\Guiyuuuuuuu_\\.guiyuniban_log\\config.txt",
+  "hasOverrides": true,
+  "logFile": "logs\\push_agent_20260611_061201.log"
+}
+
+[2026-06-11T06:12:01] [Agent] Agent 初始化完成
+
+[2026-06-11T06:12:01] [Agent] 开始 PushTasks
+{
+  "notionRootId": "2d2c8609-8d01-8071-ad8b-ec8db78d70bb",
+  "commitPreviewLength": 854,
+  "configKeys": [
+    "commit_preview_file",
+    "config_file",
+    "data_dir",
+    "day_boundary_hour",
+    "notion_commit_page_id",
+    "notion_push_max_explore_steps",
+    "notion_task_category_page_id",
+    "notion_token",
+    "openai_api_key",
+    "task_index_file",
+    "uncommit_file"
+  ]
+}
+
+[2026-06-11T06:12:01] [Agent] 读取 NotionRoot 页面
+{
+  "pageId": "2d2c8609-8d01-8071-ad8b-ec8db78d70bb"
+}
+
+[2026-06-11T06:12:01] Notion API 调用
+{
+  "动作": "AccessPageAsMarkdown",
+  "用途": "读取 NotionRoot",
+  "pageId": "2d2c8609…"
+}
+
+[2026-06-11T06:12:13] Notion API 原始结果: AccessPageAsMarkdown
+> 注释：Notion 页类型 - child_page
+
+本学期时间预算分配 99 / 70
+`CAP`  ■■■■■■■■■■ (8)
+`MS`   ■■■■■■■■■■ (8) 
+`WK`   ■■■■■■■■■■■■■■ (11) 
+`GEN`  ■■■■■■■■■■ (5) 
+`TM`    ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ (23) 
+`CPP`  ■■■■■■■■■■■■■■■■■■■■■■■■■ (25) 
+# 工作投递表 [Notion link: 2fbc8609-8d01-80f0-a56c-d2ff8d1b992a]
+# 临时措施资产支付记录 [Notion database_id: 50c3f5f6-66ee-4dab-90e9-bc9c4efadb43] [Notion database_view_id: 7b0174e2-1951-41ca-9c30-dbc2f8ae9db7] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+# GDC 行程 [Notion link: 31ec8609-8d01-8020-97f6-f5217d7d38b6]
+# 临时措施新设计文档 [Notion link: 34dc8609-8d01-80fc-9c4b-fba86b6c755a]
+# 春季主要工作室 期末冲刺 [Notion link: 351c8609-8d01-8098-9a4c-c00c8f663f1a]
+# 信息库 [Notion link: 373c8609-8d01-8086-8935-fd00678c1f15]
+# 十二月 第四周 [12/22 - 12/28] [Notion database_id: 2d2c8609-8d01-80fc-8381-f2a881841f0d] [Notion database_view_id: 2d2c8609-8d01-81d4-bb72-000ca24c54a1] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **23 任务，50.75 小时**
+# 一月 第一周 [12/29 - 1/4] [Notion database_id: 2d8c8609-8d01-80b4-8416-d244e14588e9] [Notion database_view_id: 2d8c8609-8d01-81c5-a74f-000c062cca11] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **42 任务，66.9 小时**
+# 一月 第二周 [1/5 - 1/11] [Notion database_id: 2dec8609-8d01-808a-a78b-f1b56ebd0a42] [Notion database_view_id: 2dec8609-8d01-81a1-a5ed-000c506cec47] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **36 任务，66.65 小时**
+# 一月 第三周 [1/12 - 1/18] [Notion database_id: 2e6c8609-8d01-8071-9b47-d0aecc796499] [Notion database_view_id: 2e6c8609-8d01-8132-9fa6-000cb8e31daf] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **31 任务，62.95 小时**
+# 一月 第四周 [1/19 - 1/25] [Notion database_id: 2edc8609-8d01-80ee-b351-f9fe037ff615] [Notion database_view_id: 2edc8609-8d01-8179-a7f2-000c28cd3596] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **36 任务，60.1 小时**
+*寒假期间总和 *`307.35`* 小时，平均每周 *`61.47`* 小时*
+# 一月 第五周 [1/26 - 2/1] [Notion database_id: 2f4c8609-8d01-8011-8ce5-fa0eed589bee] [Notion database_view_id: 2f4c8609-8d01-81dc-bb3a-000cd936745b] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **44 任务，73.85 小时**
+# 二月 第一周 [2/2 - 2/8] [Notion database_id: 2fbc8609-8d01-8003-be42-fc76056f32c5] [Notion database_view_id: 2fbc8609-8d01-8136-a4b6-000cf4c40f72] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **55 任务，80.25 小时**
+# 二月 第二周 [2/9 - 2/15] [Notion database_id: 302c8609-8d01-808c-b617-c813fe804c66] [Notion database_view_id: 302c8609-8d01-818a-95a9-000c43e73586] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **47 任务，71.55 小时**
+# 二月 第三周 [2/16 - 2/22] [Notion database_id: 309c8609-8d01-8080-aef7-e7c93ac05c8f] [Notion database_view_id: 309c8609-8d01-8126-98ca-000ccedeec02] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **50 任务，69.45 小时**
+# 二月 第四周 [2/23 - 3/1] [Notion database_id: 310c8609-8d01-800e-aa0c-e5d6d2a48868] [Notion database_view_id: 310c8609-8d01-81a5-a976-000cc622a84a] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **38 任务，71 小时**
+# 三月 第一周 [3/2 - 3/8] [Notion database_id: 317c8609-8d01-802a-ac6f-e64cb4c0778e] [Notion database_view_id: 317c8609-8d01-810f-8013-000cff22430c] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **38 任务，57.8 小时**
+# 三月 第二周 [3/8 - 3/15] [Notion database_id: 325c8609-8d01-8067-94f0-eb9f41bcaa73] [Notion database_view_id: 325c8609-8d01-810c-aa68-000c33c36c8f] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **- 任务，70 小时**
+# 三月 第三周 [3/16 - 3/22] [Notion database_id: 325c8609-8d01-80a4-8d04-cd4e72155476] [Notion database_view_id: 325c8609-8d01-817f-9b07-000c4b607a39] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **31 任务，62.45 小时**
+# 三月 第四周 [3/23 - 3/29] [Notion database_id: 32cc8609-8d01-800c-ab87-cfcf30a1703b] [Notion database_view_id: 32cc8609-8d01-8158-ad80-000c9ed866a5] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **26 任务，44.2 小时**
+# 四月 第一周 [3/30 - 4/5] [Notion database_id: 334c8609-8d01-80f4-baf5-f4afc946ec21] [Notion database_view_id: 334c8609-8d01-81e9-8ef3-000cd7926cf5] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **34 任务，38.175 小时**
+# 四月 第二周 [4/6 - 4/12] [Notion database_id: 33bc8609-8d01-802b-8501-cdcc20bc27b1] [Notion database_view_id: 33bc8609-8d01-817d-9147-000c23a32157] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **35 任务，43.4 小时**
+# 四月 第三周 [4/13 - 4/19] [Notion database_id: 343c8609-8d01-8086-9c91-dc494619c599] [Notion database_view_id: 343c8609-8d01-8196-94b3-000cc5291b7b] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **24 任务，33.4 小时**
+# 四月 第四周 [4/20 - 4/26] [Notion database_id: 349c8609-8d01-8096-b997-cddfe8f11cad] [Notion database_view_id: 349c8609-8d01-81e2-bde3-000cb591f583] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **25 任务，44.135 小时**
+# 四月 第五周 [4/27 - 5/3] [Notion database_id: 350c8609-8d01-80db-8fbb-ff89d8ac7773] [Notion database_view_id: 350c8609-8d01-81e0-8879-000c1767dae3] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **64 任务，72.65 小时**
+# 五月 第一周 [5/4 - 5/10] [Notion database_id: 357c8609-8d01-804b-bac6-ff5e4600e797] [Notion database_view_id: 357c8609-8d01-81b2-9e94-000ccd7aed58] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **40 任务，73.35 小时**
+# 五月 第二周 [5/11 - 5/17] [Notion database_id: 35dc8609-8d01-8051-959b-d331449f5e66] [Notion database_view_id: 35dc8609-8d01-8188-adeb-000c7fb50cfd] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **19 任务，45.2 小时**
+# 五月 第三周 [5/18 - 5/24] [Notion database_id: 365c8609-8d01-80ac-8846-ff684b401f14] [Notion database_view_id: 365c8609-8d01-81c6-b961-000ca5f9ba5c] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **16 任务，36.75 小时**
+# 五月 第四周 [5/25 - 5/31] [Notion database_id: 36bc8609-8d01-8067-8d70-f38db7da8b67] [Notion database_view_id: 36bc8609-8d01-8184-91f4-000c191bcc07] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **8 任务，21.05 小时**
+# 六月 第一周 [6/1 - 6/7] [Notion database_id: 373c8609-8d01-81c9-b765-f4af99439855] [Notion database_view_id: 373c8609-8d01-81a8-b203-000c207d6371] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **31 任务，49.63 小时**
+**::| 若新任务的完成时间未在上述 Page 中列出，例如任务完成时间为 5/12 日，而不存在 五月第二周的 Page，则通过 duplicate without content 复制 最后的一个标题为 X月 第X周 的 Page。如果已经存在正确时间的子页，就将内容复制到这个子页里面。另外，不用复制 | x 任务，x 小时这一部分。请你做非常细致的日期检验，不要出现幻觉随便选页使用。**
+- 用固定样式与函数调用生成文档 | 周一 | 0.63H | GEN
+- 凞颺工作合同洽谈 | 周一 | 2.37H | WK
+- 整理履历数据库 | 周一 | 2.61H | WK
+- 浏览招聘网站 | 周一 | 0.51H | WK
+- 改进Guiyuniban LLM应用 | 周二 | 2.9H | 未分类
+- 谈入职 | 周二 | 1.6H
+- 5.11 - 8.00, 9.11 - 11.42, 11.50 - 12.29, 3.08 - 
+1. 程序：读取NOTION页，传递给LLM，并启动一个无限循环
+2. LLM：附上上次对该页的经验记忆。读取NOTION页，判断是否与上次记忆的一致，那么就 {拼接第六步的提示词}。如果不一致，从第一步的无限循环中退出
+3. 程序：如果不一致，调用LLM
+4. LLM：读取NOTION页，总结该页的页结构，根据页结构和NOTION页内容，思考用户期望自己写入到哪里，并告诉程序。这个页结构总结+猜测用户期望自己写入到哪里的信息叫做该页的经验记忆。注意，这里的页结构总结应该附带有一个结构类型列表，例如：
+  1. 可打开子页类型A，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true
+  2. 可打开子页类型B，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true
+  3. 也可以没有任何子页类型，就是空列表
+  注意，目前为止的整个经验记忆存储在 [NotionRoot.md](http://notionroot.md/) 中
+5. 程序：储存页经验记忆到本地，并启动一个无限循环
+6. LLM：根据找到写入点并写入 string taskContent 的目标，带着经验记忆和当前NOTION页内容，判断应该写在当前页，还是探索某个子页或者子数据库，并判断该子页或子数据库是当前context的经验记忆内的哪种可打开子页类型
+7. 如果：
+  1. 8. LLM：探索某个子页或子数据库，如果该子页类型和记忆内容不匹配，或者该子页的记忆内容缺失，那么就总结该页的页结构，根据页结构和NOTION页内容，思考用户期望自己写入到哪里，并告诉程序。这个页结构总结+猜测用户期望自己写入到哪里的信息叫做该页的经验记忆。注意，这里的页结构总结应该附带有一个结构类型列表，例如：
+    1. 可打开子页类型A，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true
+    2. 可打开子页类型B，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true
+    3. 也可以没有任何子页类型，就是空列表
+    总结完，就将当前子页的经验记忆附在经验记忆stack中
+    9. LLM+程序：如果该子页类型和记忆内容确实能够匹配，就将当前子页的经验记忆附在经验记忆stack中
+    1. 下一轮循环继续
+  2. 11. LLM：如果写在当前页，就仿照当前页结构写入 string taskDescription
+    12. 程序：将LLM返回的结果写入到NOTION中
+# 六月 第二周 [6/8 - 6/14] [Notion database_id: 37cc8609-8d01-8114-bfda-f45ebebe8189] [Notion database_view_id: 37cc8609-8d01-815e-a7c4-000c0d73dacd] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+
+[2026-06-11T06:12:13] Notion API 结果
+{
+  "动作": "AccessPageAsMarkdown",
+  "markdown长度": 7783,
+  "markdown预览": "> 注释：Notion 页类型 - child_page\n\n本学期时间预算分配 99 / 70\n`CAP`  ■■■■■■■■■■ (8)\n`MS`   ■■■■■■■■■■ (8) \n`WK`   ■■■■■■■■■■■■■■ (11) \n`GEN`  ■■■■■■■■■■ (5) \n`TM`    ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ (23) \n`CPP`  ■■■■■■■■■■■■■■■■■■■■■■■■■ (25) \n# 工作投递表 [Notion link: 2fbc8609-8d01-80f0-a56c-d2ff8d1b992a]\n# 临时措施资产支付记录 [Notion database_id: 50c3f5f6-66ee-4dab-90e9-bc9c4efadb43] [Notion database_view_id: 7b0174e2-1951-41ca-9c30-dbc2f8ae9db7] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n# GDC 行程 [Notion link: 31ec8609-8d01-8020-97f6-f5217d7d38b6]\n# 临时措施新设计文档 [Notion link: 34dc8609-8d01-80fc-9c4b-fba86b6c755a]\n# 春季主要工作室 期末冲刺 [Notion link: 351c8609-8d01-8098-9a4c-c00c8f663f1a]\n# 信息库 [Notion link: 373c8609-8d01-8086-8935-fd00678c1f15]\n# 十二月 第四周 [12/22 - 12/28] [Notion database_id: 2d2c8609-8d01-80fc-8381-f2a881841f0d] [Notion database_view_id: 2d2c8609-8d01-81d4-bb72-000ca24c54a1] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **23 任务，50.75 小时**\n# 一月 第一周 [12/29 - 1/4] [Notion database_id: 2d8c8609-8d01-80b4-8416-d244e14588e9] [Notion database_view_id: 2d8c8609-8d01-81c5-a74f-000c062cca11] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **42 任务，66.9 小时**\n# 一月 第二周 [1/5 - 1/11] [Notion database_id: 2dec8609-8d01-808a-a78b-f1b56ebd0a42] [Notion database_view_id: 2dec8609-8d01-81a1-a5ed-000c506cec47] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **36 任务，66.65 小时**\n# 一月 第三周 [1/12 - 1/18] [Notion database_id: 2e6c8609-8d01-8071-9b47-d0aecc796499] [Notion database_view_id: 2e6c8609-8d01-8132-9fa6-000cb8e31daf] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **31 任务，62.95 小时**\n# 一月 第四周 [1/19 - 1/25] [Notion database_id: 2edc8609-8d01-80ee-b351-f9fe037ff615] [Notion database_view_id: 2edc8609-8d01-8179-a7f2-000c28cd3596] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **36 任务，60.1 小时**\n*寒假期间总和 *`307.35`* 小时，平均每周 *`61.47`* 小时*\n# 一月 第五周 [1/26 - 2/1] [Notion database_id: 2f4c8609-8d01-8011-8ce5-fa0eed589bee] [Notion database_view_id: 2f4c8609-8d01-81dc-bb3a-000cd936745b] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **44 任务，73.85 小时**\n# 二月 第一周 [2/2 - 2/8] [Notion database_id: 2fbc8609-8d01-8003-be42-fc76056f32c5] [Notion database_view_id: 2fbc8609-8d01-8136-a4b6-000cf4c40f72] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **55 任务，80.25 小时**\n# 二月 第二周 [2/9 - 2/15] [Notion database_id: 302c8609-8d01-808c-b617-c813fe804c66] [Notion database_view_id: 302c8609-8d01-818a-95a9-000c43e73586] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **47 任务，71.55 小时**\n# 二月 第三周 [2/16 - 2/22] [Notion database_id: 309c8609-8d01-8080-aef7-e7c93ac05c8f] [Notion database_view_id: 309c8609-8d01-8126-98ca-000ccedeec02] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **50 任务，69.45 小时**\n# 二月 第四周 [2/23 - 3/1] [Notion database_id: 310c8609-8d01-800e-aa0c-e5d6d2a48868] [Notion database_view_id: 310c8609-8d01-81a5-a976-000cc622a84a] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **38 任务，71 小时**\n# 三月 第一周 [3/2 - 3/8] [Notion database_id: 317c8609-8d01-802a-ac6f-e64cb4c0778e] [Notion database_view_id: 317c8609-8d01-810f-8013-000cff22430c] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **38 任务，57.8 小时**\n# 三月 第二周 [3/8 - 3/15] [Notion database_id: 325c8609-8d01-8067-94f0-eb9f41bcaa73] [Notion database_view_id: 325c8609-8d01-810c-aa68-000c33c36c8f] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **- 任务，70 小时**\n# 三月 第三周 [3/16 - 3/22] [Notion database_id: 325c8609-8d01-80a4-8d04-cd4e72155476] [Notion database_view_id: 325c8609-8d01-817f-9b07-000c4b607a39] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **31 任务，62.45 小时**\n# 三月 第四周 [3/23 - 3/29] [Notion database_id: 32cc8609-8d01-800c-ab87-cfcf30a1703b] [Notion database_view_id: 32cc8609-8d01-8158-ad80-000c9ed866a5] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **26 任务，44.2 小时**\n# 四月 第一周 [3/30 - 4/5] [Notion database_id: 334c8609-8d01-80f4-baf5-f4afc946ec21] [Notion database_view_id: 334c8609-8d01-81e9-8ef3-000cd7926cf5] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **34 任务，38.175 小时**\n# 四月 第二周 [4/6 - 4/12] [Notion database_id: 33bc8609-8d01-802b-8501-cdcc20bc27b1] [Notion database_view_id: 33bc8609-8d01-817d-9147-000c23a32157] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **35 任务，43.4 小时**\n# 四月 第三周 [4/13 - 4/19] [Notion database_id: 343c8609-8d01-8086-9c91-dc494619c599] [Notion database_view_id: 343c8609-8d01-8196-94b3-000cc5291b7b] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **24 任务，33.4 小时**\n# 四月 第四周 [4/20 - 4/26] [Notion database_id: 349c8609-8d01-8096-b997-cddfe8f11cad] [Notion database_view_id: 349c8609-8d01-81e2-bde3-000cb591f583] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **25 任务，44.135 小时**\n# 四月 第五周 [4/27 - 5/3] [Notion database_id: 350c8609-8d01-80db-8fbb-ff89d8ac7773] [Notion database_view_id: 350c8609-8d01-81e0-8879-000c1767dae3] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **64 任务，72.65 小时**\n# 五月 第一周 [5/4 - 5/10] [Notion database_id: 357c8609-8d01-804b-bac6-ff5e4600e797] [Notion database_view_id: 357c8609-8d01-81b2-9e94-000ccd7aed58] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **40 任务，73.35 小时**\n# 五月 第二周 [5/11 - 5/17] [Notion database_id: 35dc8609-8d01-8051-959b-d331449f5e66] [Notion database_view_id: 35dc8609-8d01-8188-adeb-000c7fb50cfd] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **19 任务，45.2 小时**\n# 五月 第三周 [5/18 - 5/24] [Notion database_id: 365c8609-8d01-80ac-8846-ff684b401f14] [Notion database_view_id: 365c8609-8d01-81c6-b961-000ca5f9ba5c] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **16 任务，36.75 小时**\n# 五月 第四周 [5/25 - 5/31] [Notion database_id: 36bc8609-8d01-8067-8d70-f38db7da8b67] [Notion database_view_id: 36bc8609-8d01-8184-91f4-000c191bcc07] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **8 任务，21.05 小时**\n# 六月 第一周 [6/1 - 6/7] [Notion database_id: 373c8609-8d01-81c9-b765-f4af99439855] [Notion database_view_id: 373c8609-8d01-81a8-b203-000c207d6371] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **31 任务，49.63 小时**\n**::| 若新任务的完成时间未在上述 Page 中列出，例如任务完成时间为 5/12 日，而不存在 五月第二周的 Page，则通过 duplicate without content 复制 最后的一个标题为 X月 第X周 的 Page。如果已经存在正确时间的子页，就将内容复制到这个子页里面。另外，不用复制 | x 任务，x 小时这一部分。请你做非常细致的日期检验，不要出现幻觉随便选页使用。**\n- 用固定样式与函数调用生成文档 | 周一 | 0.63H | GEN\n- 凞颺工作合同洽谈 | 周一 | 2.37H | WK\n- 整理履历数据库 | 周一 | 2.61H | WK\n- 浏览招聘网站 | 周一 | 0.51H | WK\n- 改进Guiyuniban LLM应用 | 周二 | 2.9H | 未分类\n- 谈入职 | 周二 | 1.6H\n- 5.11 - 8.00, 9.11 - 11.42, 11.50 - 12.29, 3.08 - \n1. 程序：读取NOTION页，传递给LLM，并启动一个无限循环\n2. LLM：附上上次对该页的经验记忆。读取NOTION页，判断是否与上次记忆的一致，那么就 {拼接第六步的提示词}。如果不一致，从第一步的无限循环中退出\n3. 程序：如果不一致，调用LLM\n4. LLM：读取NOTION页，总结该页的页结构，根据页结构和NOTION页内容，思考用户期望自己写入到哪里，并告诉程序。这个页结构总结+猜测用户期望自己写入到哪里的信息叫做该页的经验记忆。注意，这里的页结构总结应该附带有一个结构类型列表，例如：\n  1. 可打开子页类型A，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true\n  2. 可打开子页类型B，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true\n  3. 也可以没有任何子页类型，就是空列表\n  注意，目前为止的整个经验记忆存储在 [NotionRoot.md](http://notionroot.md/) 中\n5. 程序：储存页经验记忆到本地，并启动一个无限循环\n6. LLM：根据找到写入点并写入 string taskContent 的目标，带着经验记忆和当前NOTION页内容，判断应该写在当前页，还是探索某个子页或者子数据库，并判断该子页或子数据库是当前context的经验记忆内的哪种可打开子页类型\n7. 如果：\n  1. 8. LLM：探索某个子页或子数据库，如果该子页类型和记忆内容不匹配，或者该子页的记忆内容缺失，那么就总结该页的页结构，根据页结构和NOTION页内容，思考用户期望自己写入到哪里，并告诉程序。这个页结构总结+猜测用户期望自己写入到哪里的信息叫做该页的经验记忆。注意，这里的页结构总结应该附带有一个结构类型列表，例如：\n    1. 可打开子页类型A，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true\n    2. 可打开子页类型B，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true\n    3. 也可以没有任何子页类型，就是空列表\n    总结完，就将当前子页的经验记忆附在经验记忆stack中\n    9. LLM+程序：如果该子页类型和记忆内容确实能够匹配，就将当前子页的经验记忆附在经验记忆stack中\n    1. 下一轮循环继续\n  2. 11. LLM：如果写在当前页，就仿照当前页结构写入 string taskDescription\n    12. 程序：将LLM返回的结果写入到NOTION中\n# 六月 第二周 [6/8 - 6/14] [Notion database_id: 37cc8609-8d01-8114-bfda-f45ebebe8189] [Notion database_view_id: 37cc8609-8d01-815e-a7c4-000c0d73dacd] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]"
+}
+
+[2026-06-11T06:12:13] [Agent] NotionRoot 页面读取完成
+{
+  "contentLength": 7783
+}
+
+[2026-06-11T06:12:13] [Agent] NotionRoot markdown
+> 注释：Notion 页类型 - child_page
+
+本学期时间预算分配 99 / 70
+`CAP`  ■■■■■■■■■■ (8)
+`MS`   ■■■■■■■■■■ (8) 
+`WK`   ■■■■■■■■■■■■■■ (11) 
+`GEN`  ■■■■■■■■■■ (5) 
+`TM`    ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ (23) 
+`CPP`  ■■■■■■■■■■■■■■■■■■■■■■■■■ (25) 
+# 工作投递表 [Notion link: 2fbc8609-8d01-80f0-a56c-d2ff8d1b992a]
+# 临时措施资产支付记录 [Notion database_id: 50c3f5f6-66ee-4dab-90e9-bc9c4efadb43] [Notion database_view_id: 7b0174e2-1951-41ca-9c30-dbc2f8ae9db7] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+# GDC 行程 [Notion link: 31ec8609-8d01-8020-97f6-f5217d7d38b6]
+# 临时措施新设计文档 [Notion link: 34dc8609-8d01-80fc-9c4b-fba86b6c755a]
+# 春季主要工作室 期末冲刺 [Notion link: 351c8609-8d01-8098-9a4c-c00c8f663f1a]
+# 信息库 [Notion link: 373c8609-8d01-8086-8935-fd00678c1f15]
+# 十二月 第四周 [12/22 - 12/28] [Notion database_id: 2d2c8609-8d01-80fc-8381-f2a881841f0d] [Notion database_view_id: 2d2c8609-8d01-81d4-bb72-000ca24c54a1] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **23 任务，50.75 小时**
+# 一月 第一周 [12/29 - 1/4] [Notion database_id: 2d8c8609-8d01-80b4-8416-d244e14588e9] [Notion database_view_id: 2d8c8609-8d01-81c5-a74f-000c062cca11] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **42 任务，66.9 小时**
+# 一月 第二周 [1/5 - 1/11] [Notion database_id: 2dec8609-8d01-808a-a78b-f1b56ebd0a42] [Notion database_view_id: 2dec8609-8d01-81a1-a5ed-000c506cec47] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **36 任务，66.65 小时**
+# 一月 第三周 [1/12 - 1/18] [Notion database_id: 2e6c8609-8d01-8071-9b47-d0aecc796499] [Notion database_view_id: 2e6c8609-8d01-8132-9fa6-000cb8e31daf] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **31 任务，62.95 小时**
+# 一月 第四周 [1/19 - 1/25] [Notion database_id: 2edc8609-8d01-80ee-b351-f9fe037ff615] [Notion database_view_id: 2edc8609-8d01-8179-a7f2-000c28cd3596] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **36 任务，60.1 小时**
+*寒假期间总和 *`307.35`* 小时，平均每周 *`61.47`* 小时*
+# 一月 第五周 [1/26 - 2/1] [Notion database_id: 2f4c8609-8d01-8011-8ce5-fa0eed589bee] [Notion database_view_id: 2f4c8609-8d01-81dc-bb3a-000cd936745b] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **44 任务，73.85 小时**
+# 二月 第一周 [2/2 - 2/8] [Notion database_id: 2fbc8609-8d01-8003-be42-fc76056f32c5] [Notion database_view_id: 2fbc8609-8d01-8136-a4b6-000cf4c40f72] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **55 任务，80.25 小时**
+# 二月 第二周 [2/9 - 2/15] [Notion database_id: 302c8609-8d01-808c-b617-c813fe804c66] [Notion database_view_id: 302c8609-8d01-818a-95a9-000c43e73586] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **47 任务，71.55 小时**
+# 二月 第三周 [2/16 - 2/22] [Notion database_id: 309c8609-8d01-8080-aef7-e7c93ac05c8f] [Notion database_view_id: 309c8609-8d01-8126-98ca-000ccedeec02] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **50 任务，69.45 小时**
+# 二月 第四周 [2/23 - 3/1] [Notion database_id: 310c8609-8d01-800e-aa0c-e5d6d2a48868] [Notion database_view_id: 310c8609-8d01-81a5-a976-000cc622a84a] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **38 任务，71 小时**
+# 三月 第一周 [3/2 - 3/8] [Notion database_id: 317c8609-8d01-802a-ac6f-e64cb4c0778e] [Notion database_view_id: 317c8609-8d01-810f-8013-000cff22430c] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **38 任务，57.8 小时**
+# 三月 第二周 [3/8 - 3/15] [Notion database_id: 325c8609-8d01-8067-94f0-eb9f41bcaa73] [Notion database_view_id: 325c8609-8d01-810c-aa68-000c33c36c8f] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **- 任务，70 小时**
+# 三月 第三周 [3/16 - 3/22] [Notion database_id: 325c8609-8d01-80a4-8d04-cd4e72155476] [Notion database_view_id: 325c8609-8d01-817f-9b07-000c4b607a39] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **31 任务，62.45 小时**
+# 三月 第四周 [3/23 - 3/29] [Notion database_id: 32cc8609-8d01-800c-ab87-cfcf30a1703b] [Notion database_view_id: 32cc8609-8d01-8158-ad80-000c9ed866a5] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **26 任务，44.2 小时**
+# 四月 第一周 [3/30 - 4/5] [Notion database_id: 334c8609-8d01-80f4-baf5-f4afc946ec21] [Notion database_view_id: 334c8609-8d01-81e9-8ef3-000cd7926cf5] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **34 任务，38.175 小时**
+# 四月 第二周 [4/6 - 4/12] [Notion database_id: 33bc8609-8d01-802b-8501-cdcc20bc27b1] [Notion database_view_id: 33bc8609-8d01-817d-9147-000c23a32157] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **35 任务，43.4 小时**
+# 四月 第三周 [4/13 - 4/19] [Notion database_id: 343c8609-8d01-8086-9c91-dc494619c599] [Notion database_view_id: 343c8609-8d01-8196-94b3-000cc5291b7b] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **24 任务，33.4 小时**
+# 四月 第四周 [4/20 - 4/26] [Notion database_id: 349c8609-8d01-8096-b997-cddfe8f11cad] [Notion database_view_id: 349c8609-8d01-81e2-bde3-000cb591f583] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **25 任务，44.135 小时**
+# 四月 第五周 [4/27 - 5/3] [Notion database_id: 350c8609-8d01-80db-8fbb-ff89d8ac7773] [Notion database_view_id: 350c8609-8d01-81e0-8879-000c1767dae3] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **64 任务，72.65 小时**
+# 五月 第一周 [5/4 - 5/10] [Notion database_id: 357c8609-8d01-804b-bac6-ff5e4600e797] [Notion database_view_id: 357c8609-8d01-81b2-9e94-000ccd7aed58] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **40 任务，73.35 小时**
+# 五月 第二周 [5/11 - 5/17] [Notion database_id: 35dc8609-8d01-8051-959b-d331449f5e66] [Notion database_view_id: 35dc8609-8d01-8188-adeb-000c7fb50cfd] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **19 任务，45.2 小时**
+# 五月 第三周 [5/18 - 5/24] [Notion database_id: 365c8609-8d01-80ac-8846-ff684b401f14] [Notion database_view_id: 365c8609-8d01-81c6-b961-000ca5f9ba5c] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **16 任务，36.75 小时**
+# 五月 第四周 [5/25 - 5/31] [Notion database_id: 36bc8609-8d01-8067-8d70-f38db7da8b67] [Notion database_view_id: 36bc8609-8d01-8184-91f4-000c191bcc07] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **8 任务，21.05 小时**
+# 六月 第一周 [6/1 - 6/7] [Notion database_id: 373c8609-8d01-81c9-b765-f4af99439855] [Notion database_view_id: 373c8609-8d01-81a8-b203-000c207d6371] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **31 任务，49.63 小时**
+**::| 若新任务的完成时间未在上述 Page 中列出，例如任务完成时间为 5/12 日，而不存在 五月第二周的 Page，则通过 duplicate without content 复制 最后的一个标题为 X月 第X周 的 Page。如果已经存在正确时间的子页，就将内容复制到这个子页里面。另外，不用复制 | x 任务，x 小时这一部分。请你做非常细致的日期检验，不要出现幻觉随便选页使用。**
+- 用固定样式与函数调用生成文档 | 周一 | 0.63H | GEN
+- 凞颺工作合同洽谈 | 周一 | 2.37H | WK
+- 整理履历数据库 | 周一 | 2.61H | WK
+- 浏览招聘网站 | 周一 | 0.51H | WK
+- 改进Guiyuniban LLM应用 | 周二 | 2.9H | 未分类
+- 谈入职 | 周二 | 1.6H
+- 5.11 - 8.00, 9.11 - 11.42, 11.50 - 12.29, 3.08 - 
+1. 程序：读取NOTION页，传递给LLM，并启动一个无限循环
+2. LLM：附上上次对该页的经验记忆。读取NOTION页，判断是否与上次记忆的一致，那么就 {拼接第六步的提示词}。如果不一致，从第一步的无限循环中退出
+3. 程序：如果不一致，调用LLM
+4. LLM：读取NOTION页，总结该页的页结构，根据页结构和NOTION页内容，思考用户期望自己写入到哪里，并告诉程序。这个页结构总结+猜测用户期望自己写入到哪里的信息叫做该页的经验记忆。注意，这里的页结构总结应该附带有一个结构类型列表，例如：
+  1. 可打开子页类型A，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true
+  2. 可打开子页类型B，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true
+  3. 也可以没有任何子页类型，就是空列表
+  注意，目前为止的整个经验记忆存储在 [NotionRoot.md](http://notionroot.md/) 中
+5. 程序：储存页经验记忆到本地，并启动一个无限循环
+6. LLM：根据找到写入点并写入 string taskContent 的目标，带着经验记忆和当前NOTION页内容，判断应该写在当前页，还是探索某个子页或者子数据库，并判断该子页或子数据库是当前context的经验记忆内的哪种可打开子页类型
+7. 如果：
+  1. 8. LLM：探索某个子页或子数据库，如果该子页类型和记忆内容不匹配，或者该子页的记忆内容缺失，那么就总结该页的页结构，根据页结构和NOTION页内容，思考用户期望自己写入到哪里，并告诉程序。这个页结构总结+猜测用户期望自己写入到哪里的信息叫做该页的经验记忆。注意，这里的页结构总结应该附带有一个结构类型列表，例如：
+    1. 可打开子页类型A，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true
+    2. 可打开子页类型B，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true
+    3. 也可以没有任何子页类型，就是空列表
+    总结完，就将当前子页的经验记忆附在经验记忆stack中
+    9. LLM+程序：如果该子页类型和记忆内容确实能够匹配，就将当前子页的经验记忆附在经验记忆stack中
+    1. 下一轮循环继续
+  2. 11. LLM：如果写在当前页，就仿照当前页结构写入 string taskDescription
+    12. 程序：将LLM返回的结果写入到NOTION中
+# 六月 第二周 [6/8 - 6/14] [Notion database_id: 37cc8609-8d01-8114-bfda-f45ebebe8189] [Notion database_view_id: 37cc8609-8d01-815e-a7c4-000c0d73dacd] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+
+[2026-06-11T06:12:13] [Agent] 读取 NotionRoot 本地经验记忆
+{
+  "exists": false
+}
+
+[2026-06-11T06:12:13] [Agent] NotionRoot 不存在本地经验记忆，需要总结
+
+[2026-06-11T06:12:13] [Agent] 总结 NotionRoot 经验记忆
+
+[2026-06-11T06:12:13] ChatGPT 调用
+{
+  "Prompt": "MemoriesBuilder",
+  "用途": "总结 NotionRoot 经验记忆",
+  "pageType": "NotionRoot",
+  "notionMarkdown长度": 7783,
+  "commitPreview长度": 854
+}
+
+[2026-06-11T06:12:37] ChatGPT 原始结果: MemoriesBuilder
+[
+  "ConceptMemory(conceptName='NotionRoot', pageStructureSummary='当前页是一个学期/长期时间预算与周任务记录索引页。顶部有本学期时间预算分配的总量和类别进度条；随后是若干项目、资料、行程、支付记录等可打开链接或数据库入口。主体结构是按自然周排列的一系列周记录区块，标题格式稳定为“X月 第X周 [起始日期 - 结束日期]”，每个周区块通常关联一个 Notion database_id/database_view_id，并在标题下方显示该周任务数量与总小时数摘要；真正的任务条目按“任务名 | 周几 | 小时H | 类别”的简洁格式记录在对应周区块/周数据库中。页面中还有一段明确说明：新任务要按完成时间进行细致日期检验，若目标周页面/周数据库已存在，就写入对应周；若不存在，才复制最后一个周页面结构创建新周，且不要复制“x 任务，x 小时”摘要。', possibleWriteTarget='本次 commitPreview 的任务 start_time 为 2026-06-10，周三，落在当前页已经存在的“六月 第二周 [6/8 - 6/14]”周记录范围内。因此后续 Agent 应优先寻址到该周任务记录数据库/周页面（database_id: 37cc8609-8d01-8114-bfda-f45ebebe8189；view_id: 37cc8609-8d01-815e-a7c4-000c0d73dacd），而不是写在当前索引页正文。写入时按既有任务格式生成一条任务记录，例如保留任务名“测试”、周几“周三”、持续小时“0H/0”、类别“未分类”；不要改动周摘要，除非后续写入机制专门负责汇总更新。', childPageTypes=[ChildPageTypeEntry(name='周任务记录数据库/周页面', description='按周划分的任务记录数据库/周页面，标题包含月份、周序号和日期范围，例如“六月 第二周 [6/8 - 6/14]”。这类子页或数据库承载该自然周内的具体任务条目，写入任务时应根据任务完成日期或 start_time/end_time 判断落在哪个日期范围内，然后打开对应周记录写入；若目标周不存在，才按页面说明复制最后一个周记录结构新建。', available=True), ChildPageTypeEntry(name='项目与资料子页', description='页面顶部的项目或资料类可打开链接，例如工作投递表、GDC 行程、设计文档、期末冲刺、信息库等。它们通常承载特定项目、资料库或行程文档，不是普通时间任务条目的默认写入位置；只有当用户明确要求更新某个项目文档、资料库或行程时才应打开。', available=True), ChildPageTypeEntry(name='支付资产记录数据库', description='页面顶部的支付/资产记录类数据库，例如“临时措施资产支付记录”。它承载支付、资产、费用等结构化记录，不是本次这种按周几和持续小时记录的时间任务条目的默认写入位置；只有任务内容明确是支付/资产记录时才应打开。', available=True)], filePath=None, exists=False, rawText='')",
+  false
+]
+
+[2026-06-11T06:12:37] ChatGPT 结果
+{
+  "Prompt": "MemoriesBuilder",
+  "shouldWriteToCurrent": false,
+  "memory预览": "--- 页结构总体描述 ---\n当前页是一个学期/长期时间预算与周任务记录索引页。顶部有本学期时间预算分配的总量和类别进度条；随后是若干项目、资料、行程、支付记录等可打开链接或数据库入口。主体结构是按自然周排列的一系列周记录区块，标题格式稳定为“X月 第X周 [起始日期 - 结束日期]”，每个周区块通常关联一个 Notion database_id/database_view_id，并在标题下方显示该周任务数量与总小时数摘要；真正的任务条目按“任务名 | 周几 | 小时H | 类别”的简洁格式记录在对应周区块/周数据库中。页面中还有一段明确说明：新任务要按完成时间进行细致日期检验，若目标周页面/周数据库已存在，就写入对应周；若不存在，才复制最后一个周页面结构创建新周，且不要复制“x 任务，x 小时”摘要。\n\n--- 用户可能希望写入到哪里 ---\n本次 commitPreview 的任务 start_time 为 2026-06-10，周三，落在当前页已经存在的“六月 第二周 [6/8 - 6/14]”周记录范围内。因此后续 Agent 应优先寻址到该周任务记录数据库/周页面（database_id: 37cc8609-8d01-8114-bfda-f45ebebe8189；view_id: 37cc8609-8d01-815e-a7c4-000c0d73dacd），而不是写在当前索引页正文。写入时按既有任务格式生成一条任务记录，例如保留任务名“测试”、周几“周三”、持续小时“0H/0”、类别“未分类”；不要改动周摘要，除非后续写入机制专门负责汇总更新。\n\n--- 子页类型列表JSON ---\n[\n  {\n    \"available\": true,\n    \"description\": \"按周划分的任务记录数据库/周页面，标题包含月份、周序号和日期范围，例如“六月 第二周 [6/8 - 6/14]”。这类子页或数据库承载该自然周内的具体任务条目，写入任务时应根据任务完成日期或 start_time/end_time 判断落在哪个日期范围内，然后打开对应周记录写入；若目标周不存在，才按页面说明复制最后一个周记录结构新建。\",\n    \"name\": \"周任务记录数据库/周页面\"\n  },\n  {\n    \"available\": true,\n    \"description\": \"页面顶部的项目或资料类可打开链接，例如工作投递表、GDC 行程、设计文档、期末冲刺、信息库等。它们通常承载特定项目、资料库或行程文档，不是普通时间任务条目的默认写入位置；只有当用户明确要求更新某个项目文档、资料库或行程时才应打开。\",\n    \"name\": \"项目与资料子页\"\n  },\n  {\n    \"available\": true,\n    \"description\": \"页面顶部的支付/资产记录类数据库，例如“临时措施资产支付记录”。它承载支付、资产、费用等结构化记录，不是本次这种按周几和持续小时记录的时间任务条目的默认写入位置；只有任务内容明确是支付/资产记录时才应打开。\",\n    \"name\": \"支付资产记录数据库\"\n  }\n]\n"
+}
+
+[2026-06-11T06:12:37] [Agent] 保存 NotionRoot 经验记忆
+{
+  "shouldWriteToCurrent": false
+}
+
+[2026-06-11T06:12:37] [Agent] NotionRoot memory
+--- 页结构总体描述 ---
+当前页是一个学期/长期时间预算与周任务记录索引页。顶部有本学期时间预算分配的总量和类别进度条；随后是若干项目、资料、行程、支付记录等可打开链接或数据库入口。主体结构是按自然周排列的一系列周记录区块，标题格式稳定为“X月 第X周 [起始日期 - 结束日期]”，每个周区块通常关联一个 Notion database_id/database_view_id，并在标题下方显示该周任务数量与总小时数摘要；真正的任务条目按“任务名 | 周几 | 小时H | 类别”的简洁格式记录在对应周区块/周数据库中。页面中还有一段明确说明：新任务要按完成时间进行细致日期检验，若目标周页面/周数据库已存在，就写入对应周；若不存在，才复制最后一个周页面结构创建新周，且不要复制“x 任务，x 小时”摘要。
+
+--- 用户可能希望写入到哪里 ---
+本次 commitPreview 的任务 start_time 为 2026-06-10，周三，落在当前页已经存在的“六月 第二周 [6/8 - 6/14]”周记录范围内。因此后续 Agent 应优先寻址到该周任务记录数据库/周页面（database_id: 37cc8609-8d01-8114-bfda-f45ebebe8189；view_id: 37cc8609-8d01-815e-a7c4-000c0d73dacd），而不是写在当前索引页正文。写入时按既有任务格式生成一条任务记录，例如保留任务名“测试”、周几“周三”、持续小时“0H/0”、类别“未分类”；不要改动周摘要，除非后续写入机制专门负责汇总更新。
+
+--- 子页类型列表JSON ---
+[
+  {
+    "available": true,
+    "description": "按周划分的任务记录数据库/周页面，标题包含月份、周序号和日期范围，例如“六月 第二周 [6/8 - 6/14]”。这类子页或数据库承载该自然周内的具体任务条目，写入任务时应根据任务完成日期或 start_time/end_time 判断落在哪个日期范围内，然后打开对应周记录写入；若目标周不存在，才按页面说明复制最后一个周记录结构新建。",
+    "name": "周任务记录数据库/周页面"
+  },
+  {
+    "available": true,
+    "description": "页面顶部的项目或资料类可打开链接，例如工作投递表、GDC 行程、设计文档、期末冲刺、信息库等。它们通常承载特定项目、资料库或行程文档，不是普通时间任务条目的默认写入位置；只有当用户明确要求更新某个项目文档、资料库或行程时才应打开。",
+    "name": "项目与资料子页"
+  },
+  {
+    "available": true,
+    "description": "页面顶部的支付/资产记录类数据库，例如“临时措施资产支付记录”。它承载支付、资产、费用等结构化记录，不是本次这种按周几和持续小时记录的时间任务条目的默认写入位置；只有任务内容明确是支付/资产记录时才应打开。",
+    "name": "支付资产记录数据库"
+  }
+]
+
+[2026-06-11T06:12:37] [Agent] 开始寻找 Tasks 写入点
+
+[2026-06-11T06:12:37] [Agent] 标记已访问
+{
+  "pageId": "2d2c8609-8d01-8071-ad8b-ec8db78d70bb"
+}
+
+[2026-06-11T06:12:37] [Agent] 导航循环
+{
+  "depth": 1,
+  "currentId": "2d2c8609-8d01-8071-ad8b-ec8db78d70bb",
+  "scope": "2d2c8609-8d01-8071-ad8b-ec8db78d70bb"
+}
+
+[2026-06-11T06:12:37] [Agent] 当前页是 NotionRoot
+{
+  "pageType": "NotionRoot"
+}
+
+[2026-06-11T06:12:37] [Agent] 读取当前页经验记忆
+{
+  "pageType": "NotionRoot",
+  "exists": true
+}
+
+[2026-06-11T06:12:37] Notion API 调用
+{
+  "动作": "AccessPageAsMarkdown",
+  "用途": "读取当前页",
+  "pageId": "2d2c8609…"
+}
+
+[2026-06-11T06:12:42] Notion API 原始结果: AccessPageAsMarkdown
+> 注释：Notion 页类型 - child_page
+
+本学期时间预算分配 99 / 70
+`CAP`  ■■■■■■■■■■ (8)
+`MS`   ■■■■■■■■■■ (8) 
+`WK`   ■■■■■■■■■■■■■■ (11) 
+`GEN`  ■■■■■■■■■■ (5) 
+`TM`    ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ (23) 
+`CPP`  ■■■■■■■■■■■■■■■■■■■■■■■■■ (25) 
+# 工作投递表 [Notion link: 2fbc8609-8d01-80f0-a56c-d2ff8d1b992a]
+# 临时措施资产支付记录 [Notion database_id: 50c3f5f6-66ee-4dab-90e9-bc9c4efadb43] [Notion database_view_id: 7b0174e2-1951-41ca-9c30-dbc2f8ae9db7] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+# GDC 行程 [Notion link: 31ec8609-8d01-8020-97f6-f5217d7d38b6]
+# 临时措施新设计文档 [Notion link: 34dc8609-8d01-80fc-9c4b-fba86b6c755a]
+# 春季主要工作室 期末冲刺 [Notion link: 351c8609-8d01-8098-9a4c-c00c8f663f1a]
+# 信息库 [Notion link: 373c8609-8d01-8086-8935-fd00678c1f15]
+# 十二月 第四周 [12/22 - 12/28] [Notion database_id: 2d2c8609-8d01-80fc-8381-f2a881841f0d] [Notion database_view_id: 2d2c8609-8d01-81d4-bb72-000ca24c54a1] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **23 任务，50.75 小时**
+# 一月 第一周 [12/29 - 1/4] [Notion database_id: 2d8c8609-8d01-80b4-8416-d244e14588e9] [Notion database_view_id: 2d8c8609-8d01-81c5-a74f-000c062cca11] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **42 任务，66.9 小时**
+# 一月 第二周 [1/5 - 1/11] [Notion database_id: 2dec8609-8d01-808a-a78b-f1b56ebd0a42] [Notion database_view_id: 2dec8609-8d01-81a1-a5ed-000c506cec47] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **36 任务，66.65 小时**
+# 一月 第三周 [1/12 - 1/18] [Notion database_id: 2e6c8609-8d01-8071-9b47-d0aecc796499] [Notion database_view_id: 2e6c8609-8d01-8132-9fa6-000cb8e31daf] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **31 任务，62.95 小时**
+# 一月 第四周 [1/19 - 1/25] [Notion database_id: 2edc8609-8d01-80ee-b351-f9fe037ff615] [Notion database_view_id: 2edc8609-8d01-8179-a7f2-000c28cd3596] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **36 任务，60.1 小时**
+*寒假期间总和 *`307.35`* 小时，平均每周 *`61.47`* 小时*
+# 一月 第五周 [1/26 - 2/1] [Notion database_id: 2f4c8609-8d01-8011-8ce5-fa0eed589bee] [Notion database_view_id: 2f4c8609-8d01-81dc-bb3a-000cd936745b] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **44 任务，73.85 小时**
+# 二月 第一周 [2/2 - 2/8] [Notion database_id: 2fbc8609-8d01-8003-be42-fc76056f32c5] [Notion database_view_id: 2fbc8609-8d01-8136-a4b6-000cf4c40f72] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **55 任务，80.25 小时**
+# 二月 第二周 [2/9 - 2/15] [Notion database_id: 302c8609-8d01-808c-b617-c813fe804c66] [Notion database_view_id: 302c8609-8d01-818a-95a9-000c43e73586] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **47 任务，71.55 小时**
+# 二月 第三周 [2/16 - 2/22] [Notion database_id: 309c8609-8d01-8080-aef7-e7c93ac05c8f] [Notion database_view_id: 309c8609-8d01-8126-98ca-000ccedeec02] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **50 任务，69.45 小时**
+# 二月 第四周 [2/23 - 3/1] [Notion database_id: 310c8609-8d01-800e-aa0c-e5d6d2a48868] [Notion database_view_id: 310c8609-8d01-81a5-a976-000cc622a84a] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **38 任务，71 小时**
+# 三月 第一周 [3/2 - 3/8] [Notion database_id: 317c8609-8d01-802a-ac6f-e64cb4c0778e] [Notion database_view_id: 317c8609-8d01-810f-8013-000cff22430c] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **38 任务，57.8 小时**
+# 三月 第二周 [3/8 - 3/15] [Notion database_id: 325c8609-8d01-8067-94f0-eb9f41bcaa73] [Notion database_view_id: 325c8609-8d01-810c-aa68-000c33c36c8f] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **- 任务，70 小时**
+# 三月 第三周 [3/16 - 3/22] [Notion database_id: 325c8609-8d01-80a4-8d04-cd4e72155476] [Notion database_view_id: 325c8609-8d01-817f-9b07-000c4b607a39] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **31 任务，62.45 小时**
+# 三月 第四周 [3/23 - 3/29] [Notion database_id: 32cc8609-8d01-800c-ab87-cfcf30a1703b] [Notion database_view_id: 32cc8609-8d01-8158-ad80-000c9ed866a5] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **26 任务，44.2 小时**
+# 四月 第一周 [3/30 - 4/5] [Notion database_id: 334c8609-8d01-80f4-baf5-f4afc946ec21] [Notion database_view_id: 334c8609-8d01-81e9-8ef3-000cd7926cf5] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **34 任务，38.175 小时**
+# 四月 第二周 [4/6 - 4/12] [Notion database_id: 33bc8609-8d01-802b-8501-cdcc20bc27b1] [Notion database_view_id: 33bc8609-8d01-817d-9147-000c23a32157] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **35 任务，43.4 小时**
+# 四月 第三周 [4/13 - 4/19] [Notion database_id: 343c8609-8d01-8086-9c91-dc494619c599] [Notion database_view_id: 343c8609-8d01-8196-94b3-000cc5291b7b] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **24 任务，33.4 小时**
+# 四月 第四周 [4/20 - 4/26] [Notion database_id: 349c8609-8d01-8096-b997-cddfe8f11cad] [Notion database_view_id: 349c8609-8d01-81e2-bde3-000cb591f583] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **25 任务，44.135 小时**
+# 四月 第五周 [4/27 - 5/3] [Notion database_id: 350c8609-8d01-80db-8fbb-ff89d8ac7773] [Notion database_view_id: 350c8609-8d01-81e0-8879-000c1767dae3] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **64 任务，72.65 小时**
+# 五月 第一周 [5/4 - 5/10] [Notion database_id: 357c8609-8d01-804b-bac6-ff5e4600e797] [Notion database_view_id: 357c8609-8d01-81b2-9e94-000ccd7aed58] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **40 任务，73.35 小时**
+# 五月 第二周 [5/11 - 5/17] [Notion database_id: 35dc8609-8d01-8051-959b-d331449f5e66] [Notion database_view_id: 35dc8609-8d01-8188-adeb-000c7fb50cfd] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **19 任务，45.2 小时**
+# 五月 第三周 [5/18 - 5/24] [Notion database_id: 365c8609-8d01-80ac-8846-ff684b401f14] [Notion database_view_id: 365c8609-8d01-81c6-b961-000ca5f9ba5c] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **16 任务，36.75 小时**
+# 五月 第四周 [5/25 - 5/31] [Notion database_id: 36bc8609-8d01-8067-8d70-f38db7da8b67] [Notion database_view_id: 36bc8609-8d01-8184-91f4-000c191bcc07] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **8 任务，21.05 小时**
+# 六月 第一周 [6/1 - 6/7] [Notion database_id: 373c8609-8d01-81c9-b765-f4af99439855] [Notion database_view_id: 373c8609-8d01-81a8-b203-000c207d6371] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+> **31 任务，49.63 小时**
+**::| 若新任务的完成时间未在上述 Page 中列出，例如任务完成时间为 5/12 日，而不存在 五月第二周的 Page，则通过 duplicate without content 复制 最后的一个标题为 X月 第X周 的 Page。如果已经存在正确时间的子页，就将内容复制到这个子页里面。另外，不用复制 | x 任务，x 小时这一部分。请你做非常细致的日期检验，不要出现幻觉随便选页使用。**
+- 用固定样式与函数调用生成文档 | 周一 | 0.63H | GEN
+- 凞颺工作合同洽谈 | 周一 | 2.37H | WK
+- 整理履历数据库 | 周一 | 2.61H | WK
+- 浏览招聘网站 | 周一 | 0.51H | WK
+- 改进Guiyuniban LLM应用 | 周二 | 2.9H | 未分类
+- 谈入职 | 周二 | 1.6H
+- 5.11 - 8.00, 9.11 - 11.42, 11.50 - 12.29, 3.08 - 
+1. 程序：读取NOTION页，传递给LLM，并启动一个无限循环
+2. LLM：附上上次对该页的经验记忆。读取NOTION页，判断是否与上次记忆的一致，那么就 {拼接第六步的提示词}。如果不一致，从第一步的无限循环中退出
+3. 程序：如果不一致，调用LLM
+4. LLM：读取NOTION页，总结该页的页结构，根据页结构和NOTION页内容，思考用户期望自己写入到哪里，并告诉程序。这个页结构总结+猜测用户期望自己写入到哪里的信息叫做该页的经验记忆。注意，这里的页结构总结应该附带有一个结构类型列表，例如：
+  1. 可打开子页类型A，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true
+  2. 可打开子页类型B，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true
+  3. 也可以没有任何子页类型，就是空列表
+  注意，目前为止的整个经验记忆存储在 [NotionRoot.md](http://notionroot.md/) 中
+5. 程序：储存页经验记忆到本地，并启动一个无限循环
+6. LLM：根据找到写入点并写入 string taskContent 的目标，带着经验记忆和当前NOTION页内容，判断应该写在当前页，还是探索某个子页或者子数据库，并判断该子页或子数据库是当前context的经验记忆内的哪种可打开子页类型
+7. 如果：
+  1. 8. LLM：探索某个子页或子数据库，如果该子页类型和记忆内容不匹配，或者该子页的记忆内容缺失，那么就总结该页的页结构，根据页结构和NOTION页内容，思考用户期望自己写入到哪里，并告诉程序。这个页结构总结+猜测用户期望自己写入到哪里的信息叫做该页的经验记忆。注意，这里的页结构总结应该附带有一个结构类型列表，例如：
+    1. 可打开子页类型A，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true
+    2. 可打开子页类型B，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true
+    3. 也可以没有任何子页类型，就是空列表
+    总结完，就将当前子页的经验记忆附在经验记忆stack中
+    9. LLM+程序：如果该子页类型和记忆内容确实能够匹配，就将当前子页的经验记忆附在经验记忆stack中
+    1. 下一轮循环继续
+  2. 11. LLM：如果写在当前页，就仿照当前页结构写入 string taskDescription
+    12. 程序：将LLM返回的结果写入到NOTION中
+# 六月 第二周 [6/8 - 6/14] [Notion database_id: 37cc8609-8d01-8114-bfda-f45ebebe8189] [Notion database_view_id: 37cc8609-8d01-815e-a7c4-000c0d73dacd] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]
+
+[2026-06-11T06:12:42] Notion API 结果
+{
+  "动作": "AccessPageAsMarkdown",
+  "markdown长度": 7783,
+  "markdown预览": "> 注释：Notion 页类型 - child_page\n\n本学期时间预算分配 99 / 70\n`CAP`  ■■■■■■■■■■ (8)\n`MS`   ■■■■■■■■■■ (8) \n`WK`   ■■■■■■■■■■■■■■ (11) \n`GEN`  ■■■■■■■■■■ (5) \n`TM`    ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ (23) \n`CPP`  ■■■■■■■■■■■■■■■■■■■■■■■■■ (25) \n# 工作投递表 [Notion link: 2fbc8609-8d01-80f0-a56c-d2ff8d1b992a]\n# 临时措施资产支付记录 [Notion database_id: 50c3f5f6-66ee-4dab-90e9-bc9c4efadb43] [Notion database_view_id: 7b0174e2-1951-41ca-9c30-dbc2f8ae9db7] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n# GDC 行程 [Notion link: 31ec8609-8d01-8020-97f6-f5217d7d38b6]\n# 临时措施新设计文档 [Notion link: 34dc8609-8d01-80fc-9c4b-fba86b6c755a]\n# 春季主要工作室 期末冲刺 [Notion link: 351c8609-8d01-8098-9a4c-c00c8f663f1a]\n# 信息库 [Notion link: 373c8609-8d01-8086-8935-fd00678c1f15]\n# 十二月 第四周 [12/22 - 12/28] [Notion database_id: 2d2c8609-8d01-80fc-8381-f2a881841f0d] [Notion database_view_id: 2d2c8609-8d01-81d4-bb72-000ca24c54a1] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **23 任务，50.75 小时**\n# 一月 第一周 [12/29 - 1/4] [Notion database_id: 2d8c8609-8d01-80b4-8416-d244e14588e9] [Notion database_view_id: 2d8c8609-8d01-81c5-a74f-000c062cca11] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **42 任务，66.9 小时**\n# 一月 第二周 [1/5 - 1/11] [Notion database_id: 2dec8609-8d01-808a-a78b-f1b56ebd0a42] [Notion database_view_id: 2dec8609-8d01-81a1-a5ed-000c506cec47] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **36 任务，66.65 小时**\n# 一月 第三周 [1/12 - 1/18] [Notion database_id: 2e6c8609-8d01-8071-9b47-d0aecc796499] [Notion database_view_id: 2e6c8609-8d01-8132-9fa6-000cb8e31daf] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **31 任务，62.95 小时**\n# 一月 第四周 [1/19 - 1/25] [Notion database_id: 2edc8609-8d01-80ee-b351-f9fe037ff615] [Notion database_view_id: 2edc8609-8d01-8179-a7f2-000c28cd3596] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **36 任务，60.1 小时**\n*寒假期间总和 *`307.35`* 小时，平均每周 *`61.47`* 小时*\n# 一月 第五周 [1/26 - 2/1] [Notion database_id: 2f4c8609-8d01-8011-8ce5-fa0eed589bee] [Notion database_view_id: 2f4c8609-8d01-81dc-bb3a-000cd936745b] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **44 任务，73.85 小时**\n# 二月 第一周 [2/2 - 2/8] [Notion database_id: 2fbc8609-8d01-8003-be42-fc76056f32c5] [Notion database_view_id: 2fbc8609-8d01-8136-a4b6-000cf4c40f72] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **55 任务，80.25 小时**\n# 二月 第二周 [2/9 - 2/15] [Notion database_id: 302c8609-8d01-808c-b617-c813fe804c66] [Notion database_view_id: 302c8609-8d01-818a-95a9-000c43e73586] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **47 任务，71.55 小时**\n# 二月 第三周 [2/16 - 2/22] [Notion database_id: 309c8609-8d01-8080-aef7-e7c93ac05c8f] [Notion database_view_id: 309c8609-8d01-8126-98ca-000ccedeec02] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **50 任务，69.45 小时**\n# 二月 第四周 [2/23 - 3/1] [Notion database_id: 310c8609-8d01-800e-aa0c-e5d6d2a48868] [Notion database_view_id: 310c8609-8d01-81a5-a976-000cc622a84a] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **38 任务，71 小时**\n# 三月 第一周 [3/2 - 3/8] [Notion database_id: 317c8609-8d01-802a-ac6f-e64cb4c0778e] [Notion database_view_id: 317c8609-8d01-810f-8013-000cff22430c] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **38 任务，57.8 小时**\n# 三月 第二周 [3/8 - 3/15] [Notion database_id: 325c8609-8d01-8067-94f0-eb9f41bcaa73] [Notion database_view_id: 325c8609-8d01-810c-aa68-000c33c36c8f] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **- 任务，70 小时**\n# 三月 第三周 [3/16 - 3/22] [Notion database_id: 325c8609-8d01-80a4-8d04-cd4e72155476] [Notion database_view_id: 325c8609-8d01-817f-9b07-000c4b607a39] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **31 任务，62.45 小时**\n# 三月 第四周 [3/23 - 3/29] [Notion database_id: 32cc8609-8d01-800c-ab87-cfcf30a1703b] [Notion database_view_id: 32cc8609-8d01-8158-ad80-000c9ed866a5] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **26 任务，44.2 小时**\n# 四月 第一周 [3/30 - 4/5] [Notion database_id: 334c8609-8d01-80f4-baf5-f4afc946ec21] [Notion database_view_id: 334c8609-8d01-81e9-8ef3-000cd7926cf5] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **34 任务，38.175 小时**\n# 四月 第二周 [4/6 - 4/12] [Notion database_id: 33bc8609-8d01-802b-8501-cdcc20bc27b1] [Notion database_view_id: 33bc8609-8d01-817d-9147-000c23a32157] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **35 任务，43.4 小时**\n# 四月 第三周 [4/13 - 4/19] [Notion database_id: 343c8609-8d01-8086-9c91-dc494619c599] [Notion database_view_id: 343c8609-8d01-8196-94b3-000cc5291b7b] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **24 任务，33.4 小时**\n# 四月 第四周 [4/20 - 4/26] [Notion database_id: 349c8609-8d01-8096-b997-cddfe8f11cad] [Notion database_view_id: 349c8609-8d01-81e2-bde3-000cb591f583] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **25 任务，44.135 小时**\n# 四月 第五周 [4/27 - 5/3] [Notion database_id: 350c8609-8d01-80db-8fbb-ff89d8ac7773] [Notion database_view_id: 350c8609-8d01-81e0-8879-000c1767dae3] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **64 任务，72.65 小时**\n# 五月 第一周 [5/4 - 5/10] [Notion database_id: 357c8609-8d01-804b-bac6-ff5e4600e797] [Notion database_view_id: 357c8609-8d01-81b2-9e94-000ccd7aed58] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **40 任务，73.35 小时**\n# 五月 第二周 [5/11 - 5/17] [Notion database_id: 35dc8609-8d01-8051-959b-d331449f5e66] [Notion database_view_id: 35dc8609-8d01-8188-adeb-000c7fb50cfd] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **19 任务，45.2 小时**\n# 五月 第三周 [5/18 - 5/24] [Notion database_id: 365c8609-8d01-80ac-8846-ff684b401f14] [Notion database_view_id: 365c8609-8d01-81c6-b961-000ca5f9ba5c] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **16 任务，36.75 小时**\n# 五月 第四周 [5/25 - 5/31] [Notion database_id: 36bc8609-8d01-8067-8d70-f38db7da8b67] [Notion database_view_id: 36bc8609-8d01-8184-91f4-000c191bcc07] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **8 任务，21.05 小时**\n# 六月 第一周 [6/1 - 6/7] [Notion database_id: 373c8609-8d01-81c9-b765-f4af99439855] [Notion database_view_id: 373c8609-8d01-81a8-b203-000c207d6371] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]\n> **31 任务，49.63 小时**\n**::| 若新任务的完成时间未在上述 Page 中列出，例如任务完成时间为 5/12 日，而不存在 五月第二周的 Page，则通过 duplicate without content 复制 最后的一个标题为 X月 第X周 的 Page。如果已经存在正确时间的子页，就将内容复制到这个子页里面。另外，不用复制 | x 任务，x 小时这一部分。请你做非常细致的日期检验，不要出现幻觉随便选页使用。**\n- 用固定样式与函数调用生成文档 | 周一 | 0.63H | GEN\n- 凞颺工作合同洽谈 | 周一 | 2.37H | WK\n- 整理履历数据库 | 周一 | 2.61H | WK\n- 浏览招聘网站 | 周一 | 0.51H | WK\n- 改进Guiyuniban LLM应用 | 周二 | 2.9H | 未分类\n- 谈入职 | 周二 | 1.6H\n- 5.11 - 8.00, 9.11 - 11.42, 11.50 - 12.29, 3.08 - \n1. 程序：读取NOTION页，传递给LLM，并启动一个无限循环\n2. LLM：附上上次对该页的经验记忆。读取NOTION页，判断是否与上次记忆的一致，那么就 {拼接第六步的提示词}。如果不一致，从第一步的无限循环中退出\n3. 程序：如果不一致，调用LLM\n4. LLM：读取NOTION页，总结该页的页结构，根据页结构和NOTION页内容，思考用户期望自己写入到哪里，并告诉程序。这个页结构总结+猜测用户期望自己写入到哪里的信息叫做该页的经验记忆。注意，这里的页结构总结应该附带有一个结构类型列表，例如：\n  1. 可打开子页类型A，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true\n  2. 可打开子页类型B，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true\n  3. 也可以没有任何子页类型，就是空列表\n  注意，目前为止的整个经验记忆存储在 [NotionRoot.md](http://notionroot.md/) 中\n5. 程序：储存页经验记忆到本地，并启动一个无限循环\n6. LLM：根据找到写入点并写入 string taskContent 的目标，带着经验记忆和当前NOTION页内容，判断应该写在当前页，还是探索某个子页或者子数据库，并判断该子页或子数据库是当前context的经验记忆内的哪种可打开子页类型\n7. 如果：\n  1. 8. LLM：探索某个子页或子数据库，如果该子页类型和记忆内容不匹配，或者该子页的记忆内容缺失，那么就总结该页的页结构，根据页结构和NOTION页内容，思考用户期望自己写入到哪里，并告诉程序。这个页结构总结+猜测用户期望自己写入到哪里的信息叫做该页的经验记忆。注意，这里的页结构总结应该附带有一个结构类型列表，例如：\n    1. 可打开子页类型A，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true\n    2. 可打开子页类型B，每个子页类型内应该放置子页的描述：这种子页是什么，同时标记可用为true\n    3. 也可以没有任何子页类型，就是空列表\n    总结完，就将当前子页的经验记忆附在经验记忆stack中\n    9. LLM+程序：如果该子页类型和记忆内容确实能够匹配，就将当前子页的经验记忆附在经验记忆stack中\n    1. 下一轮循环继续\n  2. 11. LLM：如果写在当前页，就仿照当前页结构写入 string taskDescription\n    12. 程序：将LLM返回的结果写入到NOTION中\n# 六月 第二周 [6/8 - 6/14] [Notion database_id: 37cc8609-8d01-8114-bfda-f45ebebe8189] [Notion database_view_id: 37cc8609-8d01-815e-a7c4-000c0d73dacd] [Notion page_id: 2d2c8609-8d01-8071-ad8b-ec8db78d70bb]"
+}
+
+[2026-06-11T06:12:42] [Agent] 当前页内容读取完成
+{
+  "currentId": "2d2c8609-8d01-8071-ad8b-ec8db78d70bb",
+  "contentLength": 7783
+}
+
+[2026-06-11T06:12:42] [Agent] 复用当前页经验记忆
+{
+  "pageType": "NotionRoot"
+}
+
+[2026-06-11T06:12:42] [Agent] 准备调用写入点导航器
+{
+  "currentId": "2d2c8609-8d01-8071-ad8b-ec8db78d70bb",
+  "memoriesCount": 1,
+  "forbiddenIds": []
+}
+
+[2026-06-11T06:12:42] ChatGPT 调用
+{
+  "Prompt": "TaskWritePointNavigator",
+  "用途": "选择 Tasks 写入点/下一步动作",
+  "currentId": "2d2c8609…",
+  "memories数量": 1,
+  "forbiddenIds": [],
+  "currentContent长度": 7783,
+  "commitPreview长度": 854
+}
+
+[2026-06-11T06:12:46] ChatGPT 原始结果: TaskWritePointNavigator
+"TaskWritePointNavigationAction(shouldWriteToCurrent=False, goBackFlag=False, exploreTarget='37cc8609-8d01-8114-bfda-f45ebebe8189', createChildType=None, createTitle=None, createDatabaseTitleProperty=None, duplicateServiceType=None, duplicateSourceId=None, duplicateSourceViewId=None, duplicateTitle=None, reason='commitPreview 的 start_time 为 2026-06-10，落在当前页已有的“六月 第二周 [6/8 - 6/14]”周任务记录范围内；该周已有明确 database_id，应进入该周数据库写入任务，而不是写在索引页正文或新建/复制。')"
+
+[2026-06-11T06:12:46] ChatGPT 结果
+{
+  "Prompt": "TaskWritePointNavigator",
+  "shouldWriteToCurrent": false,
+  "goBackFlag": false,
+  "exploreTarget": "37cc8609…",
+  "createChildType": null,
+  "createTitle": null,
+  "createDatabaseTitleProperty": null,
+  "duplicateServiceType": null,
+  "duplicateSourceId": "",
+  "duplicateSourceViewId": "",
+  "duplicateTitle": null,
+  "reason": "commitPreview 的 start_time 为 2026-06-10，落在当前页已有的“六月 第二周 [6/8 - 6/14]”周任务记录范围内；该周已有明确 database_id，应进入该周数据库写入任务，而不是写在索引页正文或新建/复制。"
+}
+
+[2026-06-11T06:12:46] [Agent] 写入点导航器返回
+{
+  "shouldWriteToCurrent": false,
+  "goBackFlag": false,
+  "exploreTarget": "37cc8609-8d01-8114-bfda-f45ebebe8189",
+  "createChildType": null,
+  "createTitle": null,
+  "createDatabaseTitleProperty": null,
+  "duplicateServiceType": null,
+  "duplicateSourceId": null,
+  "duplicateSourceViewId": null,
+  "duplicateTitle": null,
+  "reason": "commitPreview 的 start_time 为 2026-06-10，落在当前页已有的“六月 第二周 [6/8 - 6/14]”周任务记录范围内；该周已有明确 database_id，应进入该周数据库写入任务，而不是写在索引页正文或新建/复制。"
+}
+
+[2026-06-11T06:12:46] [Agent] 进入下一层探索
+{
+  "fromId": "2d2c8609-8d01-8071-ad8b-ec8db78d70bb",
+  "exploreTarget": "37cc8609-8d01-8114-bfda-f45ebebe8189"
+}
+
+[2026-06-11T06:12:46] [Agent] 标记已访问
+{
+  "pageId": "37cc8609-8d01-8114-bfda-f45ebebe8189"
+}
+
+[2026-06-11T06:12:46] [Agent] 导航循环
+{
+  "depth": 2,
+  "currentId": "37cc8609-8d01-8114-bfda-f45ebebe8189",
+  "scope": "2d2c8609-8d01-8071-ad8b-ec8db78d70bb -> 37cc8609-8d01-8114-bfda-f45ebebe8189"
+}
+
+[2026-06-11T06:12:46] [Agent] 识别子页类型
+{
+  "currentId": "37cc8609-8d01-8114-bfda-f45ebebe8189",
+  "parentConcept": "NotionRoot"
+}
+
+[2026-06-11T06:12:46] Notion API 调用
+{
+  "动作": "AccessPageAsMarkdown",
+  "用途": "识别子页类型",
+  "pageId": "37cc8609…"
+}
+
+[2026-06-11T06:12:48] Notion API 原始结果: AccessPageAsMarkdown
+> 注释：Notion 页类型 - child_database
+
+# 六月 第二周 [6/8 - 6/14] [Notion database_id: 37cc8609-8d01-8114-bfda-f45ebebe8189] [Notion database_view_id: 37cc8609-8d01-815e-a7c4-000c0d73dacd]
+
+## Properties
+- 时间: `rich_text`
+- 项目: `select`
+- 工作量: `rich_text`
+- 任务: `title`
+
+## Rows
+### 1. 测试
+- **时间**: 周三
+- **项目**: 未分类
+- **工作量**: 0
+- **任务**: 测试
+#### Page Content
+## 明细
+- 任务名: 测试
+- 周几: 周三
+- 持续小时: 0
+- 类别: 未分类
+- 任务组 ID: 49ae8c8c-abb0-4537-be6d-ac7e59f6ae32
+- Session IDs: b6a422e1-6513-4944-b296-4ffd5cdef75c
+- Source Key: 49ae8c8c-abb0-4537-be6d-ac7e59f6ae32:周三
+- Session Names: 测试
+- Start Time: 2026-06-10T19:42:42-04:00
+- End Time: 2026-06-10T19:42:58-04:00
+- Commit ID: 53b178cb-abfc-4406-8e0f-e67035319d45
+- Generated At: 2026-06-10T19:43:16
+
+[2026-06-11T06:12:48] Notion API 结果
+{
+  "动作": "AccessPageAsMarkdown",
+  "markdown长度": 732,
+  "markdown预览": "> 注释：Notion 页类型 - child_database\n\n# 六月 第二周 [6/8 - 6/14] [Notion database_id: 37cc8609-8d01-8114-bfda-f45ebebe8189] [Notion database_view_id: 37cc8609-8d01-815e-a7c4-000c0d73dacd]\n\n## Properties\n- 时间: `rich_text`\n- 项目: `select`\n- 工作量: `rich_text`\n- 任务: `title`\n\n## Rows\n### 1. 测试\n- **时间**: 周三\n- **项目**: 未分类\n- **工作量**: 0\n- **任务**: 测试\n#### Page Content\n## 明细\n- 任务名: 测试\n- 周几: 周三\n- 持续小时: 0\n- 类别: 未分类\n- 任务组 ID: 49ae8c8c-abb0-4537-be6d-ac7e59f6ae32\n- Session IDs: b6a422e1-6513-4944-b296-4ffd5cdef75c\n- Source Key: 49ae8c8c-abb0-4537-be6d-ac7e59f6ae32:周三\n- Session Names: 测试\n- Start Time: 2026-06-10T19:42:42-04:00\n- End Time: 2026-06-10T19:42:58-04:00\n- Commit ID: 53b178cb-abfc-4406-8e0f-e67035319d45\n- Generated At: 2026-06-10T19:43:16\n"
+}
+
+[2026-06-11T06:12:48] ChatGPT 调用
+{
+  "Prompt": "PageTypeRecognizer",
+  "用途": "识别子页类型",
+  "parentConcept": "NotionRoot",
+  "notionMarkdown长度": 732
+}
+
+[2026-06-11T06:12:52] ChatGPT 原始结果: PageTypeRecognizer
+{
+  "pageType": "周任务记录数据库/周页面",
+  "matchedExistingType": true,
+  "reason": "当前子页标题包含月份、周序号和日期范围，且为承载周内任务条目的数据库，字段和行内容记录任务、周几、工作量、项目，符合父页已有的按周任务记录类型。"
+}
+
+[2026-06-11T06:12:52] ChatGPT 结果
+{
+  "Prompt": "PageTypeRecognizer",
+  "pageTypeRaw": "周任务记录数据库/周页面",
+  "matchedExistingType": true,
+  "reason": "当前子页标题包含月份、周序号和日期范围，且为承载周内任务条目的数据库，字段和行内容记录任务、周几、工作量、项目，符合父页已有的按周任务记录类型。"
+}
+
+[2026-06-11T06:12:52] [Agent] 子页类型识别完成
+{
+  "pageTypeRaw": "周任务记录数据库/周页面",
+  "pageType": "NotionRoot$周任务记录数据库/周页面",
+  "matchedExistingType": true,
+  "reason": "当前子页标题包含月份、周序号和日期范围，且为承载周内任务条目的数据库，字段和行内容记录任务、周几、工作量、项目，符合父页已有的按周任务记录类型。"
+}

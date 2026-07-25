@@ -33,6 +33,8 @@ except ImportError:  # pragma: no cover - 只在未安装 rich 的环境中触�
 
 DEFAULT_TIMEZONE = "America/New_York"
 DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
+DEFAULT_TASK_INDEX_START = 10000
+TASK_INDEX_STEP = 5
 
 
 def read_config(config_file: str | None) -> dict[str, str]:
@@ -99,6 +101,70 @@ def append_txt_record(file_path: str, record: dict[str, Any]) -> None:
     with path.open("a", encoding="utf-8") as f:
         f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
+
+
+def _task_index_file(context: dict[str, str]) -> Path:
+    if context.get("task_index_file"):
+        return Path(context["task_index_file"])
+    if context.get("data_dir"):
+        return Path(context["data_dir"]) / "task_index.txt"
+    return Path(context["uncommit_file"]).parent / "task_index.txt"
+
+
+def _coerce_task_index(value: Any) -> int | None:
+    try:
+        index = int(value)
+    except (TypeError, ValueError):
+        return None
+    return index if index >= 0 else None
+
+
+def _max_existing_task_index(records: list[dict[str, Any]]) -> int | None:
+    indexes = [
+        index
+        for record in records
+        for index in (_coerce_task_index(record.get("task_index") or record.get("编号")),)
+        if index is not None
+    ]
+    return max(indexes) if indexes else None
+
+
+def _read_next_task_index(context: dict[str, str], records: list[dict[str, Any]] | None = None) -> int:
+    path = _task_index_file(context)
+    if path.exists():
+        try:
+            index = int(path.read_text(encoding="utf-8").strip())
+        except ValueError:
+            index = DEFAULT_TASK_INDEX_START
+        return max(index, DEFAULT_TASK_INDEX_START)
+
+    max_existing = _max_existing_task_index(records or [])
+    if max_existing is not None:
+        return max_existing + TASK_INDEX_STEP
+    return DEFAULT_TASK_INDEX_START
+
+
+def allocate_task_index(context: dict[str, str], records: list[dict[str, Any]] | None = None) -> int:
+    """
+    为一个新任务组分配排序编号。
+
+    编号从 10000 开始，每次新任务增加 5；编号只用于排序，不参与任务合并。
+    """
+    index = _read_next_task_index(context, records)
+    path = _task_index_file(context)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(str(index + TASK_INDEX_STEP), encoding="utf-8")
+    return index
+
+
+def _group_task_index(records: list[dict[str, Any]], group_id: str) -> int | None:
+    for record in records:
+        if str(record.get("task_group_id") or "") != group_id:
+            continue
+        index = _coerce_task_index(record.get("task_index") or record.get("编号"))
+        if index is not None:
+            return index
+    return None
 
 def find_active_session(records: list[dict[str, Any]]) -> int | None:
     for index in range(len(records) - 1, -1, -1):
@@ -430,8 +496,13 @@ def _build_uncommitted_groups(records: list[dict[str, Any]]) -> list[dict[str, A
                 "task_names": [],
                 "sessions": [],
                 "latest_time": "",
+                "task_index": None,
             },
         )
+
+        task_index = _coerce_task_index(record.get("task_index") or record.get("编号"))
+        if task_index is not None and group.get("task_index") is None:
+            group["task_index"] = task_index
 
         name = str(record.get("task_name") or "").strip()
         canonical = str(record.get("canonical_task_name") or "").strip()
@@ -482,6 +553,7 @@ def _choose_group_fallback(task_name: str, groups: list[dict[str, Any]]) -> dict
         "confidence": best_score,
         "reason": "未检测到可用 LLM，已使用本地文本相似度选择最相近的未 commit 任务。",
         "method": "fallback_similarity",
+        "task_index": best_group.get("task_index"),
     }
 
 
@@ -531,6 +603,10 @@ def choose_task_group_with_llm(task_name: str, groups: list[dict[str, Any]], con
     result = _openai_json(messages, context)
     valid_group_ids = {group["task_group_id"] for group in groups}
     if result and result.get("task_group_id") in valid_group_ids:
+        selected_group = next(
+            (group for group in groups if group["task_group_id"] == result.get("task_group_id")),
+            {},
+        )
         return {
             "task_group_id": str(result.get("task_group_id")),
             "canonical_task_name": str(result.get("canonical_task_name") or task_name),
@@ -538,6 +614,7 @@ def choose_task_group_with_llm(task_name: str, groups: list[dict[str, Any]], con
             "confidence": result.get("confidence"),
             "reason": str(result.get("reason") or "LLM 已选择最相似的未 commit 任务。"),
             "method": "llm",
+            "task_index": selected_group.get("task_index"),
         }
 
     return _choose_group_fallback(task_name, groups)
@@ -577,6 +654,7 @@ def _choose_latest_ended_group(records: list[dict[str, Any]]) -> dict[str, Any] 
             "method": "latest_ended",
             "source_session_id": record.get("session_id") or "",
             "source_end_time": record.get("end_time") or "",
+            "task_index": _coerce_task_index(record.get("task_index") or record.get("编号")),
         }
 
     return None
@@ -599,6 +677,7 @@ def start_task(task_name: str, context: dict[str, str]) -> int:
         _render_error("已有正在进行的任务", _active_task_message(records[active_index]))
         return 1
 
+    task_index = allocate_task_index(context, records)
     now = now_iso(context)
     record = {
         "type": "session",
@@ -610,6 +689,7 @@ def start_task(task_name: str, context: dict[str, str]) -> int:
         "start_time": now,
         "end_time": None,
         "committed": False,
+        "task_index": task_index,
         "created_at": now,
         "updated_at": now,
     }
@@ -653,6 +733,11 @@ def cont_task(task_name: str, context: dict[str, str]) -> int:
         if match is None:
             return start_task(task_name=task_name, context=context)
 
+    task_index = _coerce_task_index(match.get("task_index"))
+    if task_index is None:
+        existing_index = _group_task_index(records, str(match.get("task_group_id") or ""))
+        task_index = existing_index if existing_index is not None else allocate_task_index(context, records)
+
     now = now_iso(context)
     record = {
         "type": "session",
@@ -665,6 +750,7 @@ def cont_task(task_name: str, context: dict[str, str]) -> int:
         "start_time": now,
         "end_time": None,
         "committed": False,
+        "task_index": task_index,
         "created_at": now,
         "updated_at": now,
         "cont_match": match,
