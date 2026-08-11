@@ -775,14 +775,19 @@ class TaskEditorDialog(QDialog):
         return self._applied
 
 
+# 持有 QApplication 引用：在 log 窗口里可能多次开面板，避免实例被回收。
+_app: Any = None
+
+
 def run_editor(commit_data: CommitData, context: dict[str, str]) -> bool:
     """
     打开编辑器，阻塞直到关闭。返回 True 表示用户点了“应用”并已写回。
     """
+    global _app
     app = QApplication.instance()
-    owns_app = app is None
-    if owns_app:
+    if app is None:
         app = QApplication([])
+    _app = app
 
     dialog = TaskEditorDialog(commit_data, context)
     dialog.exec()

@@ -1,9 +1,10 @@
 """
-`log check` 与 `log edit` 的命令入口。
+`log check` / `log edit` / `log desc` 的命令入口。
 
 - check_task：读 commit_preview.txt，跑 重叠 + 持续时间不一致 两项分析，
   按 JetBrains 风格在终端打印；只要有问题，就自动打开 `log edit` 的 GUI。
 - edit_task：直接打开 GUI 编辑 committed 任务。
+- desc_task：commit **之前** 编辑各 session 的详细描述（写回 uncommit_tasks.txt）。
 
 GUI（PySide6）只在需要时才 import，避免无图形环境时强依赖 Qt。
 """
@@ -15,6 +16,7 @@ from typing import Optional
 from summary import _render_error, _render_info
 
 from .analysis import Problem, Severity, analyze
+from .desc_store import DescData, DescLoadError, load_desc_data
 from .store import CommitData, CommitLoadError, load_commit_data
 
 try:
@@ -102,3 +104,48 @@ def edit_task(context: dict[str, str]) -> int:
         return 1
 
     return _launch_editor(commit_data, context)
+
+
+def _launch_description_editor(desc_data: DescData, context: dict[str, str]) -> int:
+    """打开 `log desc` 面板；Qt 缺失时给出可执行的提示。"""
+    try:
+        from .ui import run_description_editor
+    except ImportError as exc:  # pragma: no cover - 仅在未装 PySide6 时
+        _render_error(
+            "无法打开描述编辑面板",
+            "缺少 PySide6。请安装后重试：\n"
+            "  python -m pip install PySide6-Essentials\n"
+            f"原始错误：{exc}",
+        )
+        return 1
+
+    saved, changed = run_description_editor(desc_data, context)
+    if saved:
+        if changed:
+            _render_info(
+                "log desc 完成",
+                f"已更新 {changed} 条任务描述；log commit 时会随任务带入 committed 池。",
+            )
+        else:
+            _render_info("log desc 完成", "描述没有变化，未做改动。")
+    else:
+        _render_info("log desc 已取消", "未对任务描述做任何改动。")
+    return 0
+
+
+def desc_task(context: dict[str, str]) -> int:
+    """log desc —— commit 前编辑未 commit session 的详细描述。"""
+    try:
+        desc_data = load_desc_data(context)
+    except DescLoadError as exc:
+        _render_error("log desc 无法执行", str(exc))
+        return 1
+
+    if not desc_data.sessions:
+        _render_info(
+            "没有可编辑描述的任务",
+            "当前没有未 commit 的任务记录。请先用 log start / log cont 记录任务。",
+        )
+        return 0
+
+    return _launch_description_editor(desc_data, context)

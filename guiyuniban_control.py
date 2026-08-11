@@ -13,10 +13,8 @@ if hasattr(sys.stderr, "reconfigure"):
 try:
     from rich.align import Align
     from rich.console import Console, Group, RenderableType
-    from rich.markdown import Markdown
     from rich.padding import Padding
     from rich.rule import Rule
-    from rich.syntax import Syntax
     from rich.table import Table
     from rich.text import Text
     from rich.theme import Theme
@@ -74,6 +72,10 @@ err_console = Console(stderr=True, theme=THEME, highlight=False)
 HELP_TEXT = """
 用法:
 
+  log
+      进入 log 窗口（命名空间），之后直接输入 start / end / commit 等子指令，
+      输入 exit 退出。任何 log 子指令也会先进入窗口再执行该指令。
+
   log start 任务名
       开始一个新任务
 
@@ -100,6 +102,10 @@ HELP_TEXT = """
 
   log push
       把整份 committed 池同步至 Notion，并备份到本地后清空池
+
+  log desc
+      commit 前编辑任务描述：打开图形面板，上半部分只读展示任务信息，
+      下半部分编辑该任务（session）的详细描述，commit 时随任务带入池中
 
   log check
       检查即将 push 的 committed 任务是否有时间重叠 / 持续时间不一致；
@@ -175,6 +181,9 @@ def print_app_help() -> None:
     console.print()
     console.print(Align.left(Text("guiyuniban log", style="app.title")))
     console.print(Text("个人任务时间记录命令行工具 · start / cont / end / commit / push", style="app.subtitle"))
+    console.print(
+        Text("在 log 窗口里可以省略 log 前缀，直接输入子指令；exit 退出窗口", style="app.subtitle")
+    )
     console.print()
 
     _print_section_title("常用命令", "🚀")
@@ -195,6 +204,7 @@ def print_app_help() -> None:
     commands.add_row("log end", "[时间]", "结束当前任务；不写时间时使用当前系统时间")
     commands.add_row("log commit", "", "校准未 commit 任务并追加进 committed 池（累积，不覆盖）")
     commands.add_row("log chat", "中文指令", "让 LLM 按中文指令修改 committed 池，逐条 y/n 审核")
+    commands.add_row("log desc", "", "commit 前编辑任务描述（上=任务信息，下=描述编辑）")
     commands.add_row("log push", "", "把整份 committed 池同步到 Notion，备份后清空")
     commands.add_row("log check", "", "检查 committed 任务重叠/持续不一致，有问题就开编辑面板")
     commands.add_row("log edit", "", "打开图形面板编辑 committed 任务（时间轴 + 逐条修正）")
@@ -230,26 +240,6 @@ def print_app_help() -> None:
         )
     )
     console.print()
-
-
-def print_commit_preview_if_available() -> None:
-    """commit 成功后，把预览文件用富文本方式展示出来。"""
-    if not COMMIT_PREVIEW_FILE.exists():
-        return
-
-    preview = COMMIT_PREVIEW_FILE.read_text(encoding="utf-8").strip()
-    if not preview:
-        print_status("warning", "commit 预览文件为空", [f"文件位置：{COMMIT_PREVIEW_FILE}"])
-        return
-
-    console.print()
-    _print_section_title("commit 预览", "🧾")
-
-    # 如果 preview 像 Markdown，就按 Markdown 渲染；否则按普通文本做语法高亮。
-    if any(marker in preview for marker in ("# ", "- ", "* ", "|")):
-        console.print(Padding(Markdown(preview), (0, 0, 0, 2)))
-    else:
-        console.print(Padding(Syntax(preview, "text", word_wrap=True), (0, 0, 0, 2)))
 
 
 class GuiyunibanArgumentParser(argparse.ArgumentParser):
@@ -431,6 +421,14 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=_formatter_class(),
     )
 
+    # log desc
+    subparsers.add_parser(
+        "desc",
+        help="commit 前编辑任务描述（上=任务信息，下=描述编辑）",
+        allow_abbrev=False,
+        formatter_class=_formatter_class(),
+    )
+
     # log check
     subparsers.add_parser(
         "check",
@@ -525,8 +523,9 @@ def dispatch(args: argparse.Namespace, context: dict[str, str]) -> int:
 
         code = commit_tasks(context=context)
         if code == 0:
+            # 池表格已由 summary._render_commit_preview 打印，这里只补一行结果确认，
+            # 不再重复渲染 commit_preview.txt 的全文明细。
             print_status("success", "committed 池已更新", [f"池文件：{COMMIT_PREVIEW_FILE}"])
-            print_commit_preview_if_available()
         return code
 
     if args.command == "chat":
@@ -545,6 +544,11 @@ def dispatch(args: argparse.Namespace, context: dict[str, str]) -> int:
         if code == 0:
             print_status("success", "已同步到 Notion")
         return code
+
+    if args.command == "desc":
+        from taskeditor import desc_task
+
+        return desc_task(context=context)
 
     if args.command == "check":
         from taskeditor import check_task
@@ -573,21 +577,15 @@ def dispatch(args: argparse.Namespace, context: dict[str, str]) -> int:
     return 2
 
 
-def main(argv: list[str] | None = None) -> int:
-    ensure_runtime_files()
+# 只执行一条指令、不进入 log 窗口的开关（脚本/管道里用）
+ONCE_FLAGS = {"--once", "--no-shell"}
+HELP_FLAGS = {"-h", "--help"}
 
-    parser = build_parser()
 
-    if argv is None:
-        argv = sys.argv[1:]
-
-    if not argv:
-        print_app_help()
-        return 0
-
+def run_command(parser: argparse.ArgumentParser, argv: list[str], context: dict[str, str]) -> int:
+    """解析并执行一条 log 指令。argparse 的 SystemExit 交给调用方处理。"""
     try:
         args = parser.parse_args(argv)
-        context = build_context()
         return dispatch(args, context)
 
     except KeyboardInterrupt:
@@ -609,6 +607,53 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         print_status("error", "运行失败", [str(exc)], stderr=True)
         return 1
+
+
+def _stdin_is_interactive() -> bool:
+    """管道 / 重定向输入时不进入 log 窗口，保证脚本调用行为不变。"""
+    try:
+        return bool(sys.stdin) and sys.stdin.isatty()
+    except (AttributeError, ValueError):
+        return False
+
+
+def main(argv: list[str] | None = None) -> int:
+    ensure_runtime_files()
+
+    parser = build_parser()
+
+    if argv is None:
+        argv = sys.argv[1:]
+
+    tokens = list(argv)
+
+    # --once / --no-shell 是窗口级开关，不是子指令，解析前先摘掉
+    once = bool(tokens) and tokens[0] in ONCE_FLAGS
+    if once:
+        tokens = tokens[1:]
+
+    context = build_context()
+
+    # -h/--help 保持一次性输出，不进窗口
+    if tokens and tokens[0] in HELP_FLAGS:
+        print_app_help()
+        return 0
+
+    if once or not _stdin_is_interactive():
+        if not tokens:
+            print_app_help()
+            return 0
+        return run_command(parser, tokens, context)
+
+    # 交互终端：任何输入都先打开 log 窗口，再把这条指令当作第一条输入执行
+    from shell import run_shell
+
+    return run_shell(
+        lambda command_argv: run_command(parser, command_argv, context),
+        console=console,
+        print_help=print_app_help,
+        initial_tokens=tokens,
+    )
 
 
 if __name__ == "__main__":

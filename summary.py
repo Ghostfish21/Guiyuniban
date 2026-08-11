@@ -81,17 +81,26 @@ def read_txt_records(file_path: str) -> list[dict[str, Any]]:
     return records
 
 
-def write_txt_records(file_path: str, records: list[dict[str, Any]]) -> None:
-    path = Path(file_path)
+def _atomic_write_text(path: Path, content: str) -> None:
+    """
+    先写同目录临时文件再 os.replace 覆盖，保证落盘是"全有或全无"。
+
+    uncommit_tasks.txt 是全量历史，直接以 "w" 打开会先截断再逐行写；
+    写到一半进程被杀 / 磁盘出错就会留下半截文件，历史直接损坏。
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as f:
-        for record in records:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    tmp_path = path.with_name(path.name + ".tmp")
+    tmp_path.write_text(content, encoding="utf-8")
+    os.replace(tmp_path, path)
+
+
+def write_txt_records(file_path: str, records: list[dict[str, Any]]) -> None:
+    content = "".join(json.dumps(record, ensure_ascii=False) + "\n" for record in records)
+    _atomic_write_text(Path(file_path), content)
 
 
 def write_text(file_path: str, content: str) -> None:
-    Path(file_path).parent.mkdir(parents=True, exist_ok=True)
-    Path(file_path).write_text(content, encoding="utf-8")
+    _atomic_write_text(Path(file_path), content)
 
 
 def _parse_dt(value: str | None) -> datetime | None:
@@ -559,27 +568,46 @@ def _extract_item_identity(item: dict[str, Any]) -> str:
     return str(item.get("source_key") or f"{item.get('task_group_id', '')}:{item.get('周几', '')}")
 
 
+def _load_existing_pool_payload(context: dict[str, str]) -> dict[str, Any]:
+    """
+    读取已有 committed 池（commit_preview.txt）的整个 payload（含 commit_id / items）。
+
+    池为空 / 不存在 / 无法解析时，视为空池返回 {"items": []}。
+    """
+    preview_path = Path(context.get("commit_preview_file") or "")
+    if not preview_path.exists():
+        return {"items": []}
+
+    text = preview_path.read_text(encoding="utf-8")
+    if not text.strip():
+        return {"items": []}
+
+    payload = _extract_commit_payload(text)
+    if not payload or not isinstance(payload.get("items"), list):
+        return {"items": []}
+
+    payload["items"] = [item for item in payload["items"] if isinstance(item, dict)]
+    return payload
+
+
 def _load_existing_pool_items(context: dict[str, str]) -> list[dict[str, Any]]:
     """
     读取已有 committed 池（commit_preview.txt）的 items。
 
     生产-消费模型下，commit 是把本次校准好的新任务“追加”进这个池子，
     因此每次 commit 前先把池内已有 items 原样取回，绝不重算、也绝不刷新它们的编号。
-    池为空 / 不存在 / 无法解析时，视为空池返回空列表。
     """
-    preview_path = Path(context.get("commit_preview_file") or "")
-    if not preview_path.exists():
-        return []
+    return _load_existing_pool_payload(context)["items"]
 
-    text = preview_path.read_text(encoding="utf-8")
-    if not text.strip():
-        return []
 
-    payload = _extract_commit_payload(text)
-    if not payload or not isinstance(payload.get("items"), list):
-        return []
-
-    return [item for item in payload["items"] if isinstance(item, dict)]
+def _pooled_session_ids(items: list[dict[str, Any]]) -> set[str]:
+    """池内 items 已经消费掉的 session id 集合。"""
+    return {
+        str(session_id)
+        for item in items
+        for session_id in (item.get("source_session_ids") or [])
+        if session_id
+    }
 
 
 def _move_task_index_to_end(item: dict[str, Any]) -> None:
@@ -644,6 +672,43 @@ def _drain_uncommitted_sessions(context: dict[str, str], commit_id: str) -> int:
     if changed:
         write_txt_records(context["uncommit_file"], records)
     return changed
+
+
+def _recover_half_committed_sessions(context: dict[str, str], pool_items: list[dict[str, Any]], commit_id: str) -> list[str]:
+    """
+    自愈上一次中断的 commit：把"已在 committed 池里、却还标着 committed:False"的 session 补排干。
+
+    commit 是两段写：先把池写进 commit_preview.txt，再把 uncommit_tasks.txt 里的
+    session 标 committed:True。两段之间进程若被杀 / 写盘失败，就会留下这种半提交状态：
+    任务既在池里，又仍算"未 commit"——log status 会重复计时，下一次 commit 也会被
+    去重逻辑悄悄丢掉（本次新增 0），用户完全看不出发生过什么。
+
+    这里按 session_id 对齐两边，把落下的那一步补上，并返回被修复的任务名。
+    只处理已结束的 session：进行中的 session 不该出现在池里，宁可留给 unfinished 检查报错。
+    """
+    pooled_ids = _pooled_session_ids(pool_items)
+    if not pooled_ids:
+        return []
+
+    records = read_txt_records(context["uncommit_file"])
+    recovered_at = datetime.now().isoformat(timespec="seconds")
+    recovered: list[str] = []
+    for record in records:
+        if record.get("type") != "session" or record.get("committed") is not False:
+            continue
+        if not record.get("end_time"):
+            continue
+        if str(record.get("session_id") or "") not in pooled_ids:
+            continue
+        record["committed"] = True
+        record["committed_at"] = recovered_at
+        record["commit_id"] = commit_id or record.get("commit_id") or "recovered"
+        record["updated_at"] = recovered_at
+        recovered.append(str(record.get("canonical_task_name") or record.get("task_name") or "未命名任务"))
+
+    if recovered:
+        write_txt_records(context["uncommit_file"], records)
+    return recovered
 
 def _build_base_commit_items(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
@@ -986,6 +1051,7 @@ def commit_tasks(context: dict[str, str]) -> int:
       log commit
 
     生产-消费模型（累积追加，不再全量覆盖）:
+    - 先自愈上一次可能中断的 commit（池已写、未committed池没排干）
     - 读取 uncommit_tasks.txt 中未 commit 且已结束的任务
     - 从 Notion 读取“任务分类”说明，用 LLM 对这批**新增**任务做初步校准
     - 取回已有 committed 池（commit_preview.txt）的 items，把新增 items 追加进去
@@ -999,6 +1065,23 @@ def commit_tasks(context: dict[str, str]) -> int:
     if not records:
         _render_empty_state("当前没有未 commit 的任务。")
         return 0
+
+    # 自愈放在最前面：修完再判断"还有没有要 commit 的任务"，
+    # 已经进池的任务就不会再白跑一次 Notion + LLM，也不会出现"本次新增 0"的哑巴结果。
+    pool_payload = _load_existing_pool_payload(context)
+    existing_items = pool_payload["items"]
+    recovered = _recover_half_committed_sessions(
+        context,
+        existing_items,
+        str(pool_payload.get("commit_id") or ""),
+    )
+    if recovered:
+        _render_info(
+            "已修复上次中断的 commit",
+            "以下任务上次已写入 committed 池、但没能从未 commit 池排干，现已补标记为 committed：\n"
+            + "\n".join(f"· {name}" for name in recovered),
+        )
+        records = read_txt_records(context["uncommit_file"])
 
     uncommitted = [
         record
@@ -1026,8 +1109,7 @@ def commit_tasks(context: dict[str, str]) -> int:
         _render_empty_state("当前没有可 commit 的已结束任务。")
         return 0
 
-    # 生产-消费模型：先取回已有 committed 池，本次新增只做“追加”，绝不刷新池内旧任务。
-    existing_items = _load_existing_pool_items(context)
+    # 生产-消费模型：池内已有 items（上面已取回）原样保留，本次新增只做“追加”。
     existing_keys = {_extract_item_identity(item) for item in existing_items}
     # 防御性去重：正常流程下已排干未committed池，新增不会与池内重复；此处兜底防止重复追加。
     new_items = [item for item in new_items if _extract_item_identity(item) not in existing_keys]
@@ -1052,7 +1134,25 @@ def commit_tasks(context: dict[str, str]) -> int:
     write_text(context["commit_preview_file"], preview)
 
     # 事务顺序：committed 池成功落盘后，才排干未committed池（标 committed:True）。
-    _drain_uncommitted_sessions(context, commit_id)
+    # 排干失败不能沉默：此刻任务已经在池里，用户必须知道两个文件暂时不一致，
+    # 以及下一次 log commit 会自动把这一步补上（_recover_half_committed_sessions）。
+    try:
+        _drain_uncommitted_sessions(context, commit_id)
+    except Exception as exc:  # noqa: BLE001 - 半提交状态必须让用户看见
+        _render_commit_preview(
+            pool_items,
+            context["commit_preview_file"],
+            category_text,
+            new_count=len(new_items),
+        )
+        _render_error(
+            "committed 池已写入，但未 commit 池排干失败",
+            f"{type(exc).__name__}: {exc}\n\n"
+            "本次任务已经进入 committed 池，不会丢；但它们在 uncommit_tasks.txt 里仍标着未 commit，"
+            "此时 log status 会重复计时。\n"
+            "再运行一次 log commit 即可自动修复（不会重复提交）。",
+        )
+        return 1
 
     _render_commit_preview(
         pool_items,

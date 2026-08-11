@@ -109,11 +109,18 @@ def read_txt_records(file_path: str) -> list[dict[str, Any]]:
 
 
 def write_txt_records(file_path: str, records: list[dict[str, Any]]) -> None:
+    """
+    整份重写 uncommit_tasks.txt。
+
+    先写同目录临时文件再 os.replace：这个文件是全量历史，直接以 "w" 打开会先截断，
+    写到一半进程被杀就只剩半截历史。与 summary._atomic_write_text 保持同样的落盘方式。
+    """
     path = Path(file_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as f:
-        for record in records:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    content = "".join(json.dumps(record, ensure_ascii=False) + "\n" for record in records)
+    tmp_path = path.with_name(path.name + ".tmp")
+    tmp_path.write_text(content, encoding="utf-8")
+    os.replace(tmp_path, path)
 
 
 def _parse_dt(value: str | None) -> datetime | None:
