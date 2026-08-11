@@ -5,7 +5,9 @@ Task Editor 主窗口（PySide6）。
   1. 上部：选中任务详情，左=原信息、右=新信息。新信息里 任务名/持续小时/类别
      可编辑，光标离开文本框（editingFinished）即保存；含“自动调整起止时间”按钮。
   2. 中部：上下两条 Premiere 风格时间轴，共享缩放/平移；上=编辑前，下=编辑中。
-  3. 下部：JetBrains 风格 Problems 面板（可随窗口高度变化、文本换行、可滚动）。
+  3. 下部：JetBrains 风格双 tab 面板（可随窗口高度变化）。左 tab=Problems（文本换行、
+     可滚动、点击跳转），右 tab=Description（按 session 编辑选中任务的详细描述）。
+     两个 tab 互斥显示，点击切换。
   底部：应用 / 取消。应用只把改动写回 committed 数据（commit_preview.txt）。
 
 Stage 1 覆盖上述骨架 + 顶层点击选中。深度选中 / 拖动 / 边缘 trim / 右键改时长 /
@@ -17,10 +19,11 @@ from __future__ import annotations
 import copy
 from typing import Any, Optional
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QEvent, Qt
 from PySide6.QtGui import QColor, QFont, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
+    QComboBox,
     QDialog,
     QFrame,
     QGridLayout,
@@ -31,9 +34,11 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QListWidget,
     QListWidgetItem,
+    QPlainTextEdit,
     QPushButton,
     QScrollBar,
     QSplitter,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -79,6 +84,28 @@ QSplitter::handle:vertical:hover { background: #4a6b96; }
 QListWidget {
     background: #1e1f22; color: #dfe1e5; border: 1px solid #3a3d40;
     border-radius: 3px;
+}
+QPlainTextEdit {
+    background: #1e1f22; color: #dfe1e5; border: 1px solid #3a3d40;
+    border-radius: 3px; padding: 3px 6px;
+}
+QPlainTextEdit:disabled { background: #2b2d30; color: #7f8489; }
+QTabWidget::pane { border: 1px solid #3a3d40; background: #2b2d30; top: -1px; }
+QTabBar::tab {
+    background: #2b2d30; color: #9aa0a6; padding: 4px 16px;
+    border: 1px solid #3a3d40; border-bottom: none;
+    border-top-left-radius: 3px; border-top-right-radius: 3px;
+}
+QTabBar::tab:selected { background: #1e1f22; color: #ffffff; }
+QTabBar::tab:hover:!selected { background: #35373a; }
+QComboBox {
+    background: #1e1f22; color: #dfe1e5; border: 1px solid #4a4d50;
+    border-radius: 3px; padding: 2px 6px;
+}
+QComboBox:disabled { background: #2b2d30; color: #7f8489; }
+QComboBox QAbstractItemView {
+    background: #1e1f22; color: #dfe1e5;
+    selection-background-color: #365880;
 }
 QScrollBar:horizontal { background: #1e1f22; height: 14px; margin: 0; }
 QScrollBar::handle:horizontal { background: #4a4d50; border-radius: 6px; min-width: 24px; }
@@ -159,12 +186,12 @@ class TaskEditorDialog(QDialog):
         # 挤压下限 = 顶信息(固定) + 分割线 + 少量时间轴余量；顶信息永远完整可见。
         upper.setMinimumHeight(TOP_ZONE_HEIGHT + 1 + FLOOR_TIMELINE_SLIVER)
 
-        # Problems 顶边 = 可拖动手柄；向上拖挤压上部块，窗口变高则 Problems 变高。
+        # 底部面板顶边 = 可拖动手柄；向上拖挤压上部块，窗口变高则底部面板变高。
         self.splitter = QSplitter(Qt.Vertical)
         self.splitter.setHandleWidth(7)
         self.splitter.setChildrenCollapsible(False)
         self.splitter.addWidget(upper)
-        self.splitter.addWidget(self._build_problems_zone())
+        self.splitter.addWidget(self._build_bottom_zone())
         self.splitter.setStretchFactor(0, 0)  # 窗口变高时，多出的高度给 Problems
         self.splitter.setStretchFactor(1, 1)
         self.splitter.setSizes([TOP_ZONE_HEIGHT + 1 + MIDDLE_HEIGHT + 12, 220])
@@ -335,22 +362,70 @@ class TaskEditorDialog(QDialog):
         self.timeline_state.changed.connect(self._sync_scrollbar)
         return frame
 
-    def _build_problems_zone(self) -> QWidget:
+    def _build_bottom_zone(self) -> QWidget:
+        """底部双 tab 面板：Problems / Description 互斥显示，点击 tab 切换。"""
         frame = QFrame()
         frame.setObjectName("zone")
         v = QVBoxLayout(frame)
         v.setContentsMargins(4, 2, 4, 2)
         v.setSpacing(4)
-        header = QLabel("Problems")
-        header.setProperty("role", "title")
-        v.addWidget(header)
+
+        self.bottom_tabs = QTabWidget()
+        self.bottom_tabs.addTab(self._build_problems_tab(), "Problems")
+        self.bottom_tabs.addTab(self._build_description_tab(), "Description")
+        v.addWidget(self.bottom_tabs, stretch=1)
+        return frame
+
+    def _build_problems_tab(self) -> QWidget:
+        box = QWidget()
+        v = QVBoxLayout(box)
+        v.setContentsMargins(4, 4, 4, 4)
+        v.setSpacing(4)
 
         self.problems_list = QListWidget()
         self.problems_list.setWordWrap(True)
         self.problems_list.setMinimumHeight(80)
         self.problems_list.itemClicked.connect(self._on_problem_clicked)
         v.addWidget(self.problems_list, stretch=1)
-        return frame
+        return box
+
+    def _build_description_tab(self) -> QWidget:
+        box = QWidget()
+        v = QVBoxLayout(box)
+        v.setContentsMargins(4, 4, 4, 4)
+        v.setSpacing(4)
+
+        header = QHBoxLayout()
+        header.setSpacing(8)
+        cap_task = QLabel("任务:")
+        cap_task.setProperty("role", "caption")
+        self.desc_task_label = QLabel("—")
+        self.desc_task_label.setProperty("role", "header")
+        cap_session = QLabel("Session:")
+        cap_session.setProperty("role", "caption")
+        self.desc_session_combo = QComboBox()
+        self.desc_session_combo.setMinimumWidth(320)
+        header.addWidget(cap_task)
+        header.addWidget(self.desc_task_label, stretch=1)
+        header.addWidget(cap_session)
+        header.addWidget(self.desc_session_combo)
+        v.addLayout(header)
+
+        self.desc_edit = QPlainTextEdit()
+        self.desc_edit.setPlaceholderText("为当前 session 填写详细描述；清空即删除该 session 的描述。")
+        self.desc_edit.setMinimumHeight(60)
+        v.addWidget(self.desc_edit, stretch=1)
+
+        note = QLabel("* 描述随输入即时保存到编辑副本（按 session_id -> 描述 存储）；点击“应用”写回 committed 池。")
+        note.setProperty("role", "note")
+        note.setWordWrap(True)
+        v.addWidget(note)
+
+        self.desc_session_combo.currentIndexChanged.connect(self._on_desc_session_changed)
+        self.desc_edit.textChanged.connect(self._on_desc_text_changed)
+        # 失焦时把这一段编辑记入撤销历史（textChanged 只写数据，不逐键入栈）
+        self.desc_edit.installEventFilter(self)
+        return box
 
     def _build_button_row(self) -> QHBoxLayout:
         row = QHBoxLayout()
@@ -437,6 +512,7 @@ class TaskEditorDialog(QDialog):
                 widget.blockSignals(False)
             for lbl in (self.new_weekday, self.new_start, self.new_end, self.new_id):
                 lbl.setText("—")
+            self._refresh_description_tab()
             return
 
         for widget, value in (
@@ -448,6 +524,7 @@ class TaskEditorDialog(QDialog):
             widget.setText(value)
             widget.blockSignals(False)
         self._refresh_new_time_labels()
+        self._refresh_description_tab()
 
     def _refresh_new_time_labels(self) -> None:
         work = self._work_by_id.get(self.selected_id)
@@ -520,6 +597,7 @@ class TaskEditorDialog(QDialog):
 
     def _after_working_change(self) -> None:
         self._refresh_new_time_labels()
+        self._refresh_description_tab()
         self.timeline_current.update()
         self.refresh_problems()
         self._record_undo()
@@ -608,6 +686,65 @@ class TaskEditorDialog(QDialog):
         item_ids = item.data(Qt.UserRole)
         if item_ids:
             self._set_selected(item_ids[0])
+
+    # ------------------------------------------------------------ description
+    def _refresh_description_tab(self) -> None:
+        """按当前选中任务重建 Description tab：任务名、session 下拉、描述文本。"""
+        work = self._work_by_id.get(self.selected_id)
+        previous_session = self.desc_session_combo.currentText()
+
+        self.desc_session_combo.blockSignals(True)
+        self.desc_session_combo.clear()
+
+        if work is None:
+            self.desc_task_label.setText("—")
+            self.desc_session_combo.setEnabled(False)
+            self.desc_edit.setEnabled(False)
+            self.desc_session_combo.blockSignals(False)
+            self._load_desc_text()
+            return
+
+        self.desc_task_label.setText(work.name or "—")
+        # 候选 session = 元数据里的 source_session_ids ∪ 已有描述的 key（防御旧数据缺元数据）
+        session_ids = [str(s) for s in (work.raw.get("source_session_ids") or []) if str(s).strip()]
+        for key in work.detailed_descriptions:
+            if key not in session_ids:
+                session_ids.append(key)
+
+        self.desc_session_combo.addItems(session_ids)
+        if previous_session in session_ids:
+            self.desc_session_combo.setCurrentIndex(session_ids.index(previous_session))
+        has_sessions = bool(session_ids)
+        self.desc_session_combo.setEnabled(has_sessions)
+        self.desc_edit.setEnabled(has_sessions)
+        self.desc_session_combo.blockSignals(False)
+        self._load_desc_text()
+
+    def _load_desc_text(self) -> None:
+        """把当前 (任务, session) 的描述填入编辑框；blockSignals 避免误触发保存。"""
+        work = self._work_by_id.get(self.selected_id)
+        session_id = self.desc_session_combo.currentText()
+        text = work.detailed_descriptions.get(session_id, "") if work is not None and session_id else ""
+        self.desc_edit.blockSignals(True)
+        self.desc_edit.setPlainText(text)
+        self.desc_edit.blockSignals(False)
+
+    def _on_desc_session_changed(self) -> None:
+        # 先把上一个 session 的净变化记入撤销历史，再加载新 session 的描述
+        self._record_undo()
+        self._load_desc_text()
+
+    def _on_desc_text_changed(self) -> None:
+        work = self._work_by_id.get(self.selected_id)
+        session_id = self.desc_session_combo.currentText()
+        if work is None or not session_id:
+            return
+        work.set_detailed_description(session_id, self.desc_edit.toPlainText())
+
+    def eventFilter(self, obj, event) -> bool:
+        if obj is self.desc_edit and event.type() == QEvent.Type.FocusOut:
+            self._record_undo()
+        return super().eventFilter(obj, event)
 
     # -------------------------------------------------------------- scrolling
     def _on_scrollbar_moved(self, value: int) -> None:

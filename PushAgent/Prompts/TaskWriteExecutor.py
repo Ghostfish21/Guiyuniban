@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 import json
+import re
 from typing import Any
 
 from PushAgent.OpenAiServices import ChatCompletionRequest
@@ -82,6 +83,9 @@ SystemPrompt: str = (
     "也不是创建或复制 Notion 对象，而是生成宿主程序调用 WritePageService 或 WriteDatabaseService 所需的 JSON 参数。"
     "你必须严格匹配目标类型：目标类型是 page 时只能生成 page 写入参数；目标类型是 database 时只能生成 database 写入参数。"
     "你必须保留 commitPreview 中的所有待写入任务信息，不要遗漏、不要发明未出现的任务。"
+    "items 中可能带有 详细描述 字段（session_id 到描述文本的映射）。目标类型是 page 时，"
+    "你必须把每一对完整写入 pageContent；目标类型是 database 时，你绝对不要把 详细描述 写入"
+    "pageContent 或任何属性——宿主程序会在写入前统一追加到对应行的 pageContent，你重复写入会造成内容双写。"
     "如果 commitPreview 中包含机器可读 JSON payload，应优先以 payload 的 items 为准；若没有 payload，再根据可读文本提取。"
     "必须尽量贴合目标页/数据库的现有结构、字段名、语言和格式。"
     "对于 database，只能使用目标数据库 Properties 中存在或根据经验记忆明确应使用的字段名；标题字段必须放入 databaseTitleProperty。"
@@ -280,6 +284,7 @@ page 写入规则：
 5. pagePositionType 默认用 "end"；只有目标页内容明确显示新内容应写到最前面时用 "start"；只有能从目标页内容中找到明确 block id 且必须插入其后时才用 "after_block"。
 6. 如果 pagePositionType="after_block"，pageAfterBlockId 必须来自【目标写入对象完整内容】；否则 pageAfterBlockId 必须为 null。
 7. databaseTitleProperty、databaseContentProperty 必须为 null；databaseRows 必须为 []。
+8. 如果任务带有 详细描述（session_id -> 描述文本 的映射），必须把每一对 session_id 与描述文本完整写入 pageContent，一对都不能丢。
 """
 
 
@@ -311,6 +316,8 @@ Database 写入规则：
 6. pageContent 可以用 Markdown，适合存放备注、原始任务描述、session_id、commit_id 等不适合放入属性的信息。
 7. pageContent 字段只在 databaseContentProperty="{_DEFAULT_DATABASE_CONTENT_PROPERTY}" 时写入；否则每行 pageContent 应为 null。
 8. pageContent、pageHeading、pagePositionType、pageAfterBlockId 必须为 null；pageAppendDivider 必须为 false。
+9. 不要把 详细描述 写入 pageContent，也不要写入任何属性。宿主程序会在写入前把每条任务的
+   详细描述 统一追加到对应行的 pageContent；你重复写入会造成同一段描述出现两次。
 """
 
 
@@ -416,6 +423,125 @@ def ValidateTaskWriteInstruction(instruction: TaskWriteInstruction, expectedTarg
     raise RuntimeError(f"Prompt3 返回未知 targetType: {instruction.targetType!r}")
 
 
+# 判重前去掉的字符：空白 + 常见 Markdown 排版符号。LLM 复述描述时往往会重排换行/缩进/加 bullet，
+# 精确子串匹配对多行文本必然误判（曾导致描述双写），因此两侧都归一化后再比较。
+_DESCRIPTION_MATCH_STRIP_PATTERN = re.compile(r"[\s\\\-*>#_`|]+")
+
+
+def _NormalizeForDescriptionMatch(text: str) -> str:
+    return _DESCRIPTION_MATCH_STRIP_PATTERN.sub("", text or "")
+
+
+def _RowTitleText(rowInstruction: DatabaseRowInstruction, titleProperty: str) -> str:
+    for propertyInstruction in rowInstruction.properties:
+        if propertyInstruction.name.strip() == titleProperty:
+            return str(propertyInstruction.stringValue or "").strip()
+    return ""
+
+
+def _ExtractItemDescriptionPairs(item: dict[str, Any]) -> list[tuple[str, str]]:
+    descriptions = item.get("详细描述")
+    if not isinstance(descriptions, dict):
+        return []
+    return [
+        (str(sessionId), str(text).strip())
+        for sessionId, text in descriptions.items()
+        if str(text or "").strip()
+    ]
+
+
+def _FindRowForItem(
+    rows: list[DatabaseRowInstruction],
+    taskName: str,
+    fallbackIndex: int | None,
+    titleProperty: str,
+) -> tuple[DatabaseRowInstruction | None, bool]:
+    """按 标题精确匹配 -> 标题包含匹配 -> 行序号 的顺序定位任务行。
+
+    返回 (行, 是否可信匹配)；找不到可信行时退回第一行并标记 False，
+    调用方需要在补写内容里带上任务名。
+    """
+    if taskName and titleProperty:
+        for row in rows:
+            if _RowTitleText(row, titleProperty) == taskName:
+                return row, True
+        for row in rows:
+            title = _RowTitleText(row, titleProperty)
+            if title and (taskName in title or title in taskName):
+                return row, True
+    if fallbackIndex is not None and 0 <= fallbackIndex < len(rows):
+        return rows[fallbackIndex], True
+    if rows:
+        return rows[0], False
+    return None, False
+
+
+def EnsureDetailedDescriptionsInDatabaseRows(
+    instruction: TaskWriteInstruction,
+    commitItems: list[dict[str, Any]],
+) -> list[str]:
+    """兜底保证：database 写入时 items 的 详细描述 必须落进任务行的 pageContent（子页）。
+
+    Prompt 已要求 LLM 写入描述；这里在写入前逐条核对，把缺失的
+    session_id -> 描述 对补写进对应行的 pageContent。返回被补写的任务名列表。
+    """
+    if not instruction.shouldWriteDatabase:
+        return []
+
+    itemsWithDescriptions = [
+        (index, item, _ExtractItemDescriptionPairs(item))
+        for index, item in enumerate(commitItems)
+        if isinstance(item, dict) and _ExtractItemDescriptionPairs(item)
+    ]
+    if not itemsWithDescriptions:
+        return []
+
+    # 没有 contentProperty 时 pageContent 不会写入 Notion，必须强制打开。
+    if not (instruction.databaseContentProperty or "").strip():
+        instruction.databaseContentProperty = _DEFAULT_DATABASE_CONTENT_PROPERTY
+
+    titleProperty = (instruction.databaseTitleProperty or "").strip()
+    rows = instruction.databaseRows
+    sameCount = len(rows) == len(commitItems)
+    patchedTaskNames: list[str] = []
+
+    for itemIndex, item, pairs in itemsWithDescriptions:
+        taskName = str(item.get("任务名") or "").strip()
+        row, matched = _FindRowForItem(
+            rows,
+            taskName,
+            fallbackIndex=itemIndex if sameCount else None,
+            titleProperty=titleProperty,
+        )
+        if row is None:
+            continue
+
+        existingContent = row.pageContent or ""
+        normalizedExisting = _NormalizeForDescriptionMatch(existingContent)
+        missingPairs = [
+            (sessionId, text)
+            for sessionId, text in pairs
+            if _NormalizeForDescriptionMatch(text) not in normalizedExisting
+        ]
+        if not missingPairs:
+            continue
+
+        header = "详细描述:" if matched else f"详细描述（{taskName}）:"
+        blockLines = [header]
+        for sessionId, text in missingPairs:
+            if "\n" in text:
+                # MarkdownToBlocks 按行转换、不支持嵌套列表：多行描述拆成
+                # "bullet 行（只含 session_id）+ 独立段落行"，避免渲染成碎块。
+                blockLines.append(f"- {sessionId}:")
+                blockLines.extend(text.splitlines())
+            else:
+                blockLines.append(f"- {sessionId}: {text}")
+        row.pageContent = "\n".join(filter(None, [existingContent.rstrip(), "\n".join(blockLines)]))
+        patchedTaskNames.append(taskName or f"item#{itemIndex}")
+
+    return patchedTaskNames
+
+
 def RunRaw(
     targetContent: str,
     targetObjectType: str,
@@ -462,6 +588,7 @@ __all__ = [
     "BuildTaskWriteInstruction",
     "DatabasePropertyInstruction",
     "DatabaseRowInstruction",
+    "EnsureDetailedDescriptionsInDatabaseRows",
     "GetPrompt",
     "JsonSchema",
     "NormalizeTargetObjectType",

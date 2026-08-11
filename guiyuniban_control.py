@@ -91,14 +91,15 @@ HELP_TEXT = """
         log end 开始之后三个小时五十三分后
 
   log commit
-      整理所有未 commit 任务，输出预览
+      让 LLM 校准所有未 commit 任务，追加进 committed 池（累积，不覆盖池内已有任务）；
+      同时把这批任务从未 commit 池排干
 
   log chat 中文指令
-      让 LLM 按中文指令修改 commit 预览，逐条 y/n 审核后覆盖 commit_preview.txt
+      让 LLM 按中文指令修改 committed 池，逐条 y/n 审核后写回
       例如: log chat 把周三的写代码任务的类别改成 Work
 
   log push
-      将 commit 结果同步至 Notion
+      把整份 committed 池同步至 Notion，并备份到本地后清空池
 
   log check
       检查即将 push 的 committed 任务是否有时间重叠 / 持续时间不一致；
@@ -106,6 +107,10 @@ HELP_TEXT = """
 
   log edit
       直接打开图形编辑面板，编辑 committed 任务（时间轴 + 逐条修正）
+
+  log status
+      统计 committed + 未 commit（已结束）任务的总用时/项数、按类别统计、按天统计，
+      以及本天时间（committed 本天 + 未 commit 本天 + 进行中任务的已持续时间）
 
   log indexreset
       将新任务编号重置为 10000
@@ -188,11 +193,12 @@ def print_app_help() -> None:
     commands.add_row("log start", "任务名", "开始一个新任务")
     commands.add_row("log cont", "[任务名]", "写任务名时按相似度继续；不写时继续最近一次 log end 的任务")
     commands.add_row("log end", "[时间]", "结束当前任务；不写时间时使用当前系统时间")
-    commands.add_row("log commit", "", "整理所有未 commit 任务，并生成预览")
-    commands.add_row("log chat", "中文指令", "让 LLM 按中文指令修改 commit 预览，逐条 y/n 审核")
-    commands.add_row("log push", "", "把 commit 结果同步到 Notion")
+    commands.add_row("log commit", "", "校准未 commit 任务并追加进 committed 池（累积，不覆盖）")
+    commands.add_row("log chat", "中文指令", "让 LLM 按中文指令修改 committed 池，逐条 y/n 审核")
+    commands.add_row("log push", "", "把整份 committed 池同步到 Notion，备份后清空")
     commands.add_row("log check", "", "检查 committed 任务重叠/持续不一致，有问题就开编辑面板")
     commands.add_row("log edit", "", "打开图形面板编辑 committed 任务（时间轴 + 逐条修正）")
+    commands.add_row("log status", "", "统计 committed + 未 commit 任务用时：总览 / 类别 / 按天 / 本天（含进行中）")
     commands.add_row("log indexreset", "", "把下一个新任务编号重置为 10000")
     console.print(commands)
 
@@ -441,6 +447,14 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=_formatter_class(),
     )
 
+    # log status
+    subparsers.add_parser(
+        "status",
+        help="统计 committed + 未 commit 任务的总用时/项数、类别与按天统计，以及本天时间（含进行中任务）",
+        allow_abbrev=False,
+        formatter_class=_formatter_class(),
+    )
+
     # log indexreset
     subparsers.add_parser(
         "indexreset",
@@ -473,6 +487,9 @@ def dispatch(args: argparse.Namespace, context: dict[str, str]) -> int:
         code = start_task(task_name=task_name, context=context)
         if code == 0:
             print_status("success", "任务已开始", [f"任务：{task_name}"])
+            from achievements import notify_start
+
+            notify_start(context)
         return code
 
     if args.command == "cont":
@@ -483,16 +500,24 @@ def dispatch(args: argparse.Namespace, context: dict[str, str]) -> int:
         if code == 0:
             detail = f"输入任务名：{task_name}" if task_name else "未提供任务名：已自动继续最近一次 log end 的任务"
             print_status("success", "任务已继续", [detail])
+            from achievements import notify_start
+
+            notify_start(context)
         return code
 
     if args.command == "end":
         from end import end_task
+        from achievements import active_session_id, notify_end
+
+        # 结束【前】先捕获当前 active session id，便于结束后定位刚结束的任务
+        ended_session_id = active_session_id(context)
 
         raw_time = join_free_text(args.time_parts)
         code = end_task(raw_time=raw_time, context=context)
         if code == 0:
             detail = f"结束时间：{raw_time}" if raw_time else "结束时间：当前系统时间"
             print_status("success", "任务已结束", [detail])
+            notify_end(context, ended_session_id)
         return code
 
     if args.command == "commit":
@@ -500,7 +525,7 @@ def dispatch(args: argparse.Namespace, context: dict[str, str]) -> int:
 
         code = commit_tasks(context=context)
         if code == 0:
-            print_status("success", "commit 预览已生成", [f"文件：{COMMIT_PREVIEW_FILE}"])
+            print_status("success", "committed 池已更新", [f"池文件：{COMMIT_PREVIEW_FILE}"])
             print_commit_preview_if_available()
         return code
 
@@ -530,6 +555,11 @@ def dispatch(args: argparse.Namespace, context: dict[str, str]) -> int:
         from taskeditor import edit_task
 
         return edit_task(context=context)
+
+    if args.command == "status":
+        from status import status_task
+
+        return status_task(context=context)
 
     if args.command == "indexreset":
         from summary import reset_task_index

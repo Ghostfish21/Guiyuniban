@@ -945,6 +945,14 @@ class Agent:
         )
 
         if writeInstruction.shouldWriteDatabase:
+            # 兜底：commit items 里的 详细描述 必须写进任务行子页，LLM 漏掉的在这里补上。
+            try:
+                commitItems = self.pushTasksService.ExtractCommitPayload(commitPreview).get("items") or []
+            except RuntimeError:
+                commitItems = []
+            patchedTasks = TaskWriteExecutor.EnsureDetailedDescriptionsInDatabaseRows(writeInstruction, commitItems)
+            if patchedTasks:
+                self._DebugPrint("兜底补写 详细描述 到 row pageContent", patchedTasks=patchedTasks)
             rows = writeInstruction.ToDatabaseRows()
             writeResult = self._CallNotion(
                 "WriteRowsToDatabase",

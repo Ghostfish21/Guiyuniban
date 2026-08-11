@@ -534,7 +534,22 @@ def allocate_task_index(context: dict[str, str]) -> int:
 
 
 def reset_task_index(context: dict[str, str]) -> int:
-    """把下一个任务排序编号重置为 10000。"""
+    """
+    把下一个任务排序编号重置为 10000。
+
+    守护：committed 池非空时拒绝重置。池内 items 的编号与新任务同出一个单调计数器，
+    倒回计数器会让后续 commit 领到与池内重复的编号，破坏 check / chat / edit 依赖的编号唯一性。
+    需先 log push 清空池，才能安全重置。
+    """
+    pool_items = _load_existing_pool_items(context)
+    if pool_items:
+        _render_error(
+            "编号无法重置",
+            f"committed 池中还有 {len(pool_items)} 条任务；重置计数器会使新任务编号与池内重复。\n"
+            "请先执行 log push 清空池，再运行 log indexreset。",
+        )
+        return 1
+
     _write_next_task_index(context, DEFAULT_TASK_INDEX_START)
     _render_info("编号已重置", f"下一个新任务编号将从 {DEFAULT_TASK_INDEX_START} 开始。")
     return 0
@@ -544,23 +559,27 @@ def _extract_item_identity(item: dict[str, Any]) -> str:
     return str(item.get("source_key") or f"{item.get('task_group_id', '')}:{item.get('周几', '')}")
 
 
-def _previous_preview_indexes(context: dict[str, str]) -> dict[str, int]:
+def _load_existing_pool_items(context: dict[str, str]) -> list[dict[str, Any]]:
+    """
+    读取已有 committed 池（commit_preview.txt）的 items。
+
+    生产-消费模型下，commit 是把本次校准好的新任务“追加”进这个池子，
+    因此每次 commit 前先把池内已有 items 原样取回，绝不重算、也绝不刷新它们的编号。
+    池为空 / 不存在 / 无法解析时，视为空池返回空列表。
+    """
     preview_path = Path(context.get("commit_preview_file") or "")
     if not preview_path.exists():
-        return {}
+        return []
 
-    payload = _extract_commit_payload(preview_path.read_text(encoding="utf-8"))
+    text = preview_path.read_text(encoding="utf-8")
+    if not text.strip():
+        return []
+
+    payload = _extract_commit_payload(text)
     if not payload or not isinstance(payload.get("items"), list):
-        return {}
+        return []
 
-    indexes: dict[str, int] = {}
-    for item in payload["items"]:
-        if not isinstance(item, dict):
-            continue
-        index = _coerce_task_index(item.get("编号") or item.get("task_index"))
-        if index is not None:
-            indexes[_extract_item_identity(item)] = index
-    return indexes
+    return [item for item in payload["items"] if isinstance(item, dict)]
 
 
 def _move_task_index_to_end(item: dict[str, Any]) -> None:
@@ -569,31 +588,62 @@ def _move_task_index_to_end(item: dict[str, Any]) -> None:
         item["编号"] = index
 
 
-def _ensure_commit_item_indexes(items: list[dict[str, Any]], context: dict[str, str]) -> None:
+def _assign_new_item_indexes(
+    new_items: list[dict[str, Any]],
+    reserved_indexes: set[int],
+    context: dict[str, str],
+) -> None:
     """
-    确保每个 commit task 有最后一列“编号”。
+    只给“本次新增” items 分配编号，保证与池内已有编号（reserved_indexes）以及彼此之间都不冲突。
 
-    规则：编号从 10000 开始，每出现一个新的 commit task 增加 5；重复执行
-    log commit 时，会复用上一份 commit_preview 中同一 source_key 的编号，避免空转递增。
+    编号是累积 committed 池的行标识——check / chat / edit 都按它定位任务，必须全局唯一。
+    - 新 item 若自带有效且未被占用的编号（log start 时领的 task_index），沿用之，保持编号稳定；
+    - 否则从单调计数器 task_index.txt 领新号，并跳过任何已被占用的号。
     """
-    previous_indexes = _previous_preview_indexes(context)
+    used = set(reserved_indexes)
     next_index = _read_next_task_index(context)
     changed_counter = False
 
-    for item in items:
+    for item in new_items:
         current = _coerce_task_index(item.get("编号") or item.get("task_index"))
-        identity = _extract_item_identity(item)
-        if current is None:
-            current = previous_indexes.get(identity)
-        if current is None:
+        if current is None or current in used:
+            while next_index in used:
+                next_index += TASK_INDEX_STEP
             current = next_index
             next_index += TASK_INDEX_STEP
             changed_counter = True
+        used.add(current)
         item["编号"] = current
         _move_task_index_to_end(item)
 
     if changed_counter:
         _write_next_task_index(context, next_index)
+
+
+def _drain_uncommitted_sessions(context: dict[str, str], commit_id: str) -> int:
+    """
+    排干未committed池：把 uncommit_tasks.txt 里所有 committed:False 的 session 标为 committed:True。
+
+    不物理删除，保留原始历史，与 start / end / cont 的 `committed is False` 过滤保持一致，
+    被标记后即从“未committed”视图消失，等价于把任务移交到 committed 池。
+
+    仅在 committed 池成功写盘后调用（事务顺序：先落池，再排干）。调用前已用
+    _find_unfinished_sessions 确认没有未结束 session，因此排干的都是已消费进池的已结束任务。
+    """
+    records = read_txt_records(context["uncommit_file"])
+    committed_at = datetime.now().isoformat(timespec="seconds")
+    changed = 0
+    for record in records:
+        if record.get("type") == "session" and record.get("committed") is False:
+            record["committed"] = True
+            record["committed_at"] = committed_at
+            record["commit_id"] = commit_id
+            record["updated_at"] = committed_at
+            changed += 1
+
+    if changed:
+        write_txt_records(context["uncommit_file"], records)
+    return changed
 
 def _build_base_commit_items(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
@@ -629,6 +679,8 @@ def _build_base_commit_items(records: list[dict[str, Any]]) -> list[dict[str, An
                 "task_group_id": group_id,
                 "source_session_ids": [],
                 "session_names": [],
+                # session_id -> 详细描述 文本；多个 session 的描述合并为映射，不拼接。
+                "详细描述": {},
                 "start_time": record.get("start_time"),
                 "end_time": record.get("end_time"),
                 "开始时间": record.get("start_time"),
@@ -646,6 +698,9 @@ def _build_base_commit_items(records: list[dict[str, Any]]) -> list[dict[str, An
         name = str(record.get("task_name") or "").strip()
         if name and name not in bucket["session_names"]:
             bucket["session_names"].append(name)
+        description = str(record.get("详细描述") or record.get("detailed_description") or "").strip()
+        if description and record.get("session_id"):
+            bucket["详细描述"][str(record["session_id"])] = description
         if record.get("start_time") and (not bucket.get("start_time") or record["start_time"] < bucket["start_time"]):
             bucket["start_time"] = record["start_time"]
             bucket["开始时间"] = record["start_time"]
@@ -671,6 +726,7 @@ def classify_tasks_with_llm(records: list[dict[str, Any]], category_text: str, c
     if not base_items:
         return []
 
+    # 白名单字段：详细描述 等隐私/长文本元数据不发送给 LLM，只在本地随 item 透传。
     compact_items = [
         {
             "source_key": item["source_key"],
@@ -771,9 +827,14 @@ def _build_commit_preview_text(items: list[dict[str, Any]], commit_payload: dict
                 f"   - 编号: {item.get('编号', '')}",
                 f"   - 任务组 ID: {item.get('task_group_id', '')}",
                 f"   - Session IDs: {', '.join(map(str, item.get('source_session_ids') or []))}",
-                "",
             ]
         )
+        descriptions = item.get("详细描述")
+        if isinstance(descriptions, dict) and descriptions:
+            preview_lines.append("   - 详细描述:")
+            for session_id, text in descriptions.items():
+                preview_lines.append(f"     - {session_id}: {text}")
+        preview_lines.append("")
 
     preview_lines.extend(
         [
@@ -850,9 +911,17 @@ def _render_info(title: str, message: str) -> None:
     )
 
 
-def _render_commit_preview(items: list[dict[str, Any]], preview_file: str, category_text: str) -> None:
+def _render_commit_preview(
+    items: list[dict[str, Any]],
+    preview_file: str,
+    category_text: str,
+    new_count: int | None = None,
+) -> None:
     if not RICH_AVAILABLE:
-        print(f"commit 预览已写入: {preview_file}")
+        if new_count is not None:
+            print(f"committed 池已更新: 本次新增 {new_count} 条，池内共 {len(items)} 条 -> {preview_file}")
+        else:
+            print(f"committed 池已写入: {preview_file}")
         for item in items:
             print(f"{item.get('任务名')} | {item.get('周几')} | {_format_hours(float(item.get('持续小时') or 0))} | {item.get('类别')} | {item.get('编号')}")
         return
@@ -883,8 +952,10 @@ def _render_commit_preview(items: list[dict[str, Any]], preview_file: str, categ
     footer = Table.grid(padding=(0, 2))
     footer.add_column(style="bold cyan", no_wrap=True)
     footer.add_column(style="white")
-    footer.add_row("任务数", str(len(items)))
-    footer.add_row("预览文件", preview_file)
+    if new_count is not None:
+        footer.add_row("本次新增", str(new_count))
+    footer.add_row("池内任务数", str(len(items)))
+    footer.add_row("池文件", preview_file)
     footer.add_row("任务分类来源", "Notion" if category_text else "未读取到 Notion 分类，已用未分类/本地兜底")
     footer.add_row("周几规则", "07:00 及以前算前一天；07:01 起算当天")
 
@@ -892,7 +963,7 @@ def _render_commit_preview(items: list[dict[str, Any]], preview_file: str, categ
     console.print(
         Panel(
             body,
-            title=Text("本次 commit 预览", style="bold green"),
+            title=Text("committed 任务池（累积，push 后清空）", style="bold green"),
             border_style="green",
             box=box.ROUNDED,
         )
@@ -914,13 +985,13 @@ def commit_tasks(context: dict[str, str]) -> int:
     处理:
       log commit
 
-    目标:
-    - 读取 uncommit_tasks.txt
-    - 整理未 commit 且已结束的任务
-    - 从 Notion 读取“任务分类”说明
-    - 用 LLM 分类
-    - 输出预览
-    - 写入 commit_preview.txt
+    生产-消费模型（累积追加，不再全量覆盖）:
+    - 读取 uncommit_tasks.txt 中未 commit 且已结束的任务
+    - 从 Notion 读取“任务分类”说明，用 LLM 对这批**新增**任务做初步校准
+    - 取回已有 committed 池（commit_preview.txt）的 items，把新增 items 追加进去
+      （池内旧任务原样保留、编号不变；新增只领新号，保证编号全局唯一）
+    - 整份池写回 commit_preview.txt
+    - 写盘成功后排干未committed池：把这批 session 标 committed:True
     """
 
     records = read_txt_records(context["uncommit_file"])
@@ -950,22 +1021,45 @@ def commit_tasks(context: dict[str, str]) -> int:
         _render_error("Notion 分类读取失败", f"已终止 commit，未生成 commit 预览。\n{exc}")
         return 1
 
-    items = classify_tasks_with_llm(uncommitted, category_text, context)
-    if not items:
+    new_items = classify_tasks_with_llm(uncommitted, category_text, context)
+    if not new_items:
         _render_empty_state("当前没有可 commit 的已结束任务。")
         return 0
 
-    _ensure_commit_item_indexes(items, context)
+    # 生产-消费模型：先取回已有 committed 池，本次新增只做“追加”，绝不刷新池内旧任务。
+    existing_items = _load_existing_pool_items(context)
+    existing_keys = {_extract_item_identity(item) for item in existing_items}
+    # 防御性去重：正常流程下已排干未committed池，新增不会与池内重复；此处兜底防止重复追加。
+    new_items = [item for item in new_items if _extract_item_identity(item) not in existing_keys]
 
-    commit_payload = {
-        "commit_id": str(uuid.uuid4()),
-        "generated_at": datetime.now().isoformat(timespec="seconds"),
-        "items": items,
+    # 池内已有编号原样保留；只给新增 item 领新号，且保证与池内、彼此都不冲突。
+    reserved = {
+        idx
+        for idx in (_coerce_task_index(item.get("编号")) for item in existing_items)
+        if idx is not None
     }
-    preview = _build_commit_preview_text(items, commit_payload)
+    _assign_new_item_indexes(new_items, reserved, context)
+
+    pool_items = existing_items + new_items
+
+    commit_id = str(uuid.uuid4())
+    commit_payload = {
+        "commit_id": commit_id,
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+        "items": pool_items,
+    }
+    preview = _build_commit_preview_text(pool_items, commit_payload)
     write_text(context["commit_preview_file"], preview)
 
-    _render_commit_preview(items, context["commit_preview_file"], category_text)
+    # 事务顺序：committed 池成功落盘后，才排干未committed池（标 committed:True）。
+    _drain_uncommitted_sessions(context, commit_id)
+
+    _render_commit_preview(
+        pool_items,
+        context["commit_preview_file"],
+        category_text,
+        new_count=len(new_items),
+    )
     return 0
 
 
@@ -1091,39 +1185,26 @@ def _run_push_agent(commit_preview: str, config: dict[str, str]) -> None:
     agent.PushTasks(commit_preview, config)
 
 
-def _mark_records_committed(context: dict[str, str], commit_payload: dict[str, Any]) -> int:
-    records = read_txt_records(context["uncommit_file"])
-    commit_id = str(commit_payload.get("commit_id") or "")
-    committed_at = datetime.now().isoformat(timespec="seconds")
+def _backup_and_clear_pool(context: dict[str, str], preview_text: str) -> Path:
+    """
+    push 的消费动作：把整份 committed 池按时间戳备份到本地，再清空池。
 
-    session_ids: set[str] = set()
-    for item in commit_payload.get("items") or []:
-        if not isinstance(item, dict):
-            continue
-        for session_id in item.get("source_session_ids") or []:
-            session_ids.add(str(session_id))
-
-    changed = 0
-    for record in records:
-        if str(record.get("session_id") or "") in session_ids:
-            record["committed"] = True
-            record["committed_at"] = committed_at
-            record["commit_id"] = commit_id
-            record["updated_at"] = committed_at
-            changed += 1
-
-    write_txt_records(context["uncommit_file"], records)
-    return changed
-
-
-def _archive_commit_preview(context: dict[str, str], commit_payload: dict[str, Any], preview_text: str) -> None:
+    - 备份仅为“信息上保证可还原”：文件内容 = 完整池预览文本（含机器可读 payload），
+      未来若要还原，把它整体追加回池、编号冲突自动领新号即可（本工具不内置还原命令）。
+    - 备份成功写盘后才清空 commit_preview.txt，避免中途失败丢数据。
+    """
     data_dir = Path(context.get("data_dir") or Path(context["commit_preview_file"]).parent)
-    archive_dir = data_dir / "commits"
-    archive_dir.mkdir(parents=True, exist_ok=True)
-    commit_id = str(commit_payload.get("commit_id") or uuid.uuid4())
-    archive_file = archive_dir / f"{commit_id}.txt"
-    archive_file.write_text(preview_text, encoding="utf-8")
+    backup_dir = data_dir / "commits"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    backup_file = backup_dir / f"push_{stamp}.txt"
+    # 极端情况下同一秒内多次 push，加 uuid 短后缀避免覆盖。
+    if backup_file.exists():
+        backup_file = backup_dir / f"push_{stamp}_{uuid.uuid4().hex[:8]}.txt"
+    backup_file.write_text(preview_text, encoding="utf-8")
+
     Path(context["commit_preview_file"]).write_text("", encoding="utf-8")
+    return backup_file
 
 
 def push_tasks(context: dict[str, str]) -> int:
@@ -1131,24 +1212,26 @@ def push_tasks(context: dict[str, str]) -> int:
     处理:
       log push
 
-    新逻辑：读取 commit_preview 后直接调用 PushAgent.Agent.PushTasks，
-    成功后再标记 session committed 并归档预览。
+    生产-消费模型的消费端：读取整份 committed 池 → 调用 PushAgent.Agent.PushTasks 同步 Notion →
+    把整份池按时间戳备份到本地 → 清空 committed 池。
+
+    注意：未committed → committed 的排干已在 log commit 完成，push 不再触碰 uncommit_tasks.txt。
     """
     preview_path = Path(context["commit_preview_file"])
 
     if not preview_path.exists() or not preview_path.read_text(encoding="utf-8").strip():
-        _render_error("没有可 push 的 commit 预览", "请先执行 log commit。")
+        _render_error("没有可 push 的 committed 池", "请先执行 log commit。")
         return 1
 
     preview_text = preview_path.read_text(encoding="utf-8")
     commit_payload = _extract_commit_payload(preview_text)
     if not commit_payload:
-        _render_error("commit 预览格式不完整", "请重新执行 log commit 生成带机器可读 payload 的预览。")
+        _render_error("committed 池格式不完整", "请重新执行 log commit 生成带机器可读 payload 的池。")
         return 1
 
     items = commit_payload.get("items") or []
     if not isinstance(items, list) or not items:
-        _render_error("commit 预览为空", "没有可 push 的任务。")
+        _render_error("committed 池为空", "没有可 push 的任务。")
         return 1
 
     try:
@@ -1159,8 +1242,11 @@ def push_tasks(context: dict[str, str]) -> int:
         _render_error("PushAgent 同步失败", str(exc))
         return 1
 
-    changed = _mark_records_committed(context, commit_payload)
-    _archive_commit_preview(context, commit_payload, preview_text)
-    _render_info("push 完成", f"已通过 PushAgent 同步到 Notion，并标记 {changed} 条 session 为 committed。")
+    backup_file = _backup_and_clear_pool(context, preview_text)
+    _render_info(
+        "push 完成",
+        f"已通过 PushAgent 同步 {len(items)} 条任务到 Notion；"
+        f"整份池已备份到 {backup_file} 并清空。",
+    )
     return 0
 

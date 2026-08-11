@@ -1,9 +1,12 @@
 """
 committed 数据的读写与任务模型。
 
-本工具里“committed 数据”= commit_preview.txt 中 JSON payload 的 items，
-也就是 `log commit` 生成、`log push` 消费的那批任务。`log edit` 只把改动写回这里，
-不动 uncommit_tasks.txt / task_index.txt，规则与 `log chat` 落盘保持一致：
+本工具里“committed 数据”= commit_preview.txt 中 JSON payload 的 items，即 committed 任务池：
+`log commit` 会把每批校准好的任务**累积追加**进来（不覆盖池内已有），`log push` 消费整份池。
+因此这里的 items 可能横跨多次 commit——但每条 item 的字段结构不变、编号在池内全局唯一，
+所以 check / edit 只按 items 处理即可，无需关心它们来自几次 commit。
+
+`log edit` 只把改动写回这里，不动 uncommit_tasks.txt / task_index.txt，规则与 `log chat` 落盘保持一致：
     - commit_id 不变
     - generated_at 刷新为当前时间
     - 编号绝不重新分配
@@ -75,6 +78,26 @@ class TaskItem:
     @category.setter
     def category(self, value: str) -> None:
         self.raw["类别"] = value
+
+    # ---- 详细描述（session_id -> 描述文本 的映射）----
+    @property
+    def detailed_descriptions(self) -> dict[str, str]:
+        value = self.raw.get("详细描述")
+        if not isinstance(value, dict):
+            return {}
+        return {str(k): str(v) for k, v in value.items() if str(v or "").strip()}
+
+    def set_detailed_description(self, session_id: str, text: str) -> None:
+        """写入/更新某个 session 的详细描述；text 为空时删除该 session 的描述。"""
+        descriptions = self.raw.get("详细描述")
+        if not isinstance(descriptions, dict):
+            descriptions = {}
+            self.raw["详细描述"] = descriptions
+        key = str(session_id)
+        if str(text or "").strip():
+            descriptions[key] = str(text)
+        else:
+            descriptions.pop(key, None)
 
     # ---- 周几（由开始时间派生，复用 summary 的边界规则）----
     @property

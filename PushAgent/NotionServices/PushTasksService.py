@@ -114,6 +114,9 @@ class PushTasksService:
         return rows
 
     def MarkRecordsCommitted(self, uncommitFile: str, commitPayload: dict[str, Any]) -> int:
+        # 注意：`log push` 流程不走这里。生产-消费模型下，未committed→committed 的排干在
+        # summary.commit_tasks 完成，备份/清空池在 summary.push_tasks 完成。此方法仅供
+        # PushCommitPreview（旧独立入口 PushCommitPreviewToNotion）使用，log push 未调用。
         path = Path(uncommitFile)
         if not path.exists():
             return 0
