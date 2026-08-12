@@ -92,6 +92,15 @@ HELP_TEXT = """
         log end 下午五点
         log end 开始之后三个小时五十三分后
 
+  log costart 任务名
+      在正在进行的任务之上再开一个并发任务（没有任务进行时无效）。
+      父级是当前路径上最内层仍在进行的任务，可以层层嵌套。
+      并发任务在 log end 结算前对 status / commit 等一律不可见。
+
+  log coend
+      结束一个并发任务；有多个在进行时弹窗选择。
+      结束顺序不影响结果，时间轴统一在 log end 时排定。
+
   log commit
       让 LLM 校准所有未 commit 任务，追加进 committed 池（累积，不覆盖池内已有任务）；
       同时把这批任务从未 commit 池排干
@@ -202,6 +211,8 @@ def print_app_help() -> None:
     commands.add_row("log start", "任务名", "开始一个新任务")
     commands.add_row("log cont", "[任务名]", "写任务名时按相似度继续；不写时继续最近一次 log end 的任务")
     commands.add_row("log end", "[时间]", "结束当前任务；不写时间时使用当前系统时间")
+    commands.add_row("log costart", "任务名", "在进行中的任务之上再开一个并发任务，可层层嵌套")
+    commands.add_row("log coend", "", "结束一个并发任务；多个在进行时弹窗选择")
     commands.add_row("log commit", "", "校准未 commit 任务并追加进 committed 池（累积，不覆盖）")
     commands.add_row("log chat", "中文指令", "让 LLM 按中文指令修改 committed 池，逐条 y/n 审核")
     commands.add_row("log desc", "", "commit 前编辑任务描述（上=任务信息，下=描述编辑）")
@@ -391,6 +402,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="可选自然语言时间，例如: 中午十二点 / 开始之后三个小时五十三分后",
     )
 
+    # log costart 任务名
+    parser_costart = subparsers.add_parser(
+        "costart",
+        help="在正在进行的任务之上再开一个并发任务",
+        allow_abbrev=False,
+        formatter_class=_formatter_class(),
+    )
+    parser_costart.add_argument(
+        "task_name_parts",
+        nargs="+",
+        metavar="任务名",
+        help="并发任务名，例如: log costart 写代码",
+    )
+
+    # log coend
+    subparsers.add_parser(
+        "coend",
+        help="结束一个并发任务；多个在进行时弹窗选择",
+        allow_abbrev=False,
+        formatter_class=_formatter_class(),
+    )
+
     # log commit
     subparsers.add_parser(
         "commit",
@@ -517,6 +550,25 @@ def dispatch(args: argparse.Namespace, context: dict[str, str]) -> int:
             print_status("success", "任务已结束", [detail])
             notify_end(context, ended_session_id)
         return code
+
+    if args.command == "costart":
+        from costart import costart_task
+
+        task_name = join_free_text(args.task_name_parts)
+        if not task_name:
+            print_status("error", "costart 指令需要任务名", stderr=True)
+            return 2
+
+        # 并发任务是独立子系统：不触发成就、不进 status，直到 log end 结算。
+        code = costart_task(task_name=task_name, context=context)
+        if code == 0:
+            print_status("success", "并发任务已开始", [f"任务：{task_name}"])
+        return code
+
+    if args.command == "coend":
+        from costart import coend_task
+
+        return coend_task(context=context)
 
     if args.command == "commit":
         from summary import commit_tasks

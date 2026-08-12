@@ -1307,6 +1307,52 @@ def _backup_and_clear_pool(context: dict[str, str], preview_text: str) -> Path:
     return backup_file
 
 
+def _preflight_check(context: dict[str, str]) -> bool:
+    """
+    push 前置门禁：跑一遍 log check 的两项分析。
+
+    - 红色（时间重叠）拒绝推送：重叠一旦进了 Notion 就要手工去清，代价远大于在这里拦一次。
+      并发任务重排后时间轴变密，这道门禁就是 costart 那套的兜底。
+    - 黄色（持续时间不一致）只警告不拦：commit 是按 (task_group, 周几) 聚合求和的，
+      同组多段任务的 min/max 跨度天然大于时长之和，拿它拦 push 会误伤。
+
+    这里不复用 taskeditor.check_task：那个一发现问题就自动开 GUI 编辑面板，
+    作为门禁太吵。分析模块在此处延迟导入，避免与 taskeditor 的 `from summary import ...` 撞成循环。
+    """
+    try:
+        from taskeditor.analysis import Severity, analyze
+        from taskeditor.store import CommitLoadError, load_commit_data
+    except ImportError:
+        # 分析模块不可用（例如没装 GUI 依赖链）时不阻断 push，保持旧行为。
+        return True
+
+    try:
+        commit_data = load_commit_data(context)
+    except CommitLoadError as exc:
+        _render_error("push 前检查无法执行", str(exc))
+        return False
+
+    problems = analyze(commit_data.items)
+    overlaps = [problem for problem in problems if problem.severity is Severity.ERROR]
+    warnings = [problem for problem in problems if problem.severity is not Severity.ERROR]
+
+    if warnings:
+        _render_info(
+            f"push 前检查：{len(warnings)} 条持续时间不一致（不阻断）",
+            "\n".join(f"⚠ {problem.message}" for problem in warnings),
+        )
+
+    if overlaps:
+        _render_error(
+            f"push 已拒绝：committed 池存在 {len(overlaps)} 处时间重叠",
+            "\n".join(f"❌ {problem.message}" for problem in overlaps)
+            + "\n\n请先用 log edit 修正时间轴，再重新 log push。",
+        )
+        return False
+
+    return True
+
+
 def push_tasks(context: dict[str, str]) -> int:
     """
     处理:
@@ -1332,6 +1378,9 @@ def push_tasks(context: dict[str, str]) -> int:
     items = commit_payload.get("items") or []
     if not isinstance(items, list) or not items:
         _render_error("committed 池为空", "没有可 push 的任务。")
+        return 1
+
+    if not _preflight_check(context):
         return 1
 
     try:

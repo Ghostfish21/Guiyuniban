@@ -574,10 +574,16 @@ def end_task(raw_time: str, context: dict[str, str]) -> int:
 
     try:
         if raw_time:
+            # 这条路上 end_time = 起点 + AI 给的时长。起点里已经含了并发结算的偏移，
+            # 所以不需要再补一次，否则会重复计入。
             end_time, duration_seconds, ai_reason = parse_end_time_with_llm(raw_time, active_record, context)
             _render_natural_time_notice(raw_time, duration_seconds, end_time, ai_reason)
         else:
-            end_time = now_iso(context)
+            # 以墙上时钟结束：如果这个任务是并发结算时整体后移过的，终点要跟着后移
+            # 同样的秒数——起点挪了终点没挪，时长就会凭空少掉那一截。
+            from costart import wall_clock_end
+
+            end_time = wall_clock_end(active_record, context)
     except ValueError as exc:
         _render_error("结束时间解析失败", str(exc))
         return 1
@@ -592,6 +598,19 @@ def end_task(raw_time: str, context: dict[str, str]) -> int:
     active_record["updated_at"] = now_iso(context)
     records[active_index] = active_record
 
+    # 并发任务（log costart）在这里一次性结算：展平重排会把 active_record 的 end_time
+    # 改短、并落成若干条真实任务，所以必须排在渲染和写盘之前。
+    # 结算失败时整次 log end 都不落盘，宁可让用户重来，也不要写出半套时间轴。
+    from costart import SettleError, render_settle_report, settle_on_end
+
+    try:
+        records, co_report = settle_on_end(records, active_index, context)
+    except SettleError as exc:
+        _render_error("并发任务结算失败", f"{exc}\n\n本次 log end 未写入任何改动。")
+        return 1
+
     write_txt_records(context["uncommit_file"], records)
     _render_ended_task(active_record)
+    if co_report is not None:
+        render_settle_report(co_report)
     return 0
