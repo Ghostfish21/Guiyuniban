@@ -2,6 +2,7 @@
 
 from .copicker import run_co_picker
 from .descwindow import run_description_editor
+from .pausewindow import run_pause_window
 from .window import run_editor
 
-__all__ = ["run_editor", "run_description_editor", "run_co_picker"]
+__all__ = ["run_editor", "run_description_editor", "run_co_picker", "run_pause_window"]

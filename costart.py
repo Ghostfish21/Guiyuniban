@@ -17,6 +17,10 @@ log costart / log coend —— 并发任务子系统。
 2. 同一父级的直接子任务互不重叠。前一个直接子任务结束前，新的 costart 只会挂到
    它下面而不是成为兄弟；由此 Σ直接子任务 ≤ 父任务时长恒成立，净时长不会为负。
 
+`log pause` 记下的空档（pause.py，type == "pause_gap"）也在这里一起结算：它像一个
+「不产出任务的子节点」，只从归属那一层的时长里扣掉。只扣一层是关键——父任务算的是
+净时长，早就把子任务的整个窗口连同里面的暂停一起扣掉了。
+
 结算只在 `log end` 发生一次（见 settle_on_end）：递归展平整棵树，把已结束的虚拟
 任务落成真实 session，把仍在进行的那条链的链首落成新的真实 active session、其余
 继续留在本子系统里。coend 只写自己的 end_time，既不提升子任务也不排时间轴——
@@ -214,6 +218,25 @@ def wall_clock_end(record: dict[str, Any], context: dict[str, str]) -> str:
     算出来的，起点里已经含了偏移，再补一次就重复了。
     """
     return (_parse_dt(now_iso(context)) + shift_of(record)).isoformat(timespec="seconds")  # type: ignore[union-attr]
+
+
+def _gap_within(
+    intervals: list[tuple[datetime, datetime]],
+    window_start: datetime,
+    window_end: datetime,
+) -> timedelta:
+    """
+    落在 [window_start, window_end] 里的暂停总时长（见 pause.py）。
+
+    暂停归属哪一层就只从哪一层扣：父任务算的是净时长，早就把子任务的整个窗口
+    （里面就含着这段暂停）扣掉了，再扣一次等于同一段时间扣两遍。
+    """
+    total = timedelta()
+    for gap_start, gap_end in intervals:
+        overlap = min(gap_end, window_end) - max(gap_start, window_start)
+        if overlap > timedelta():
+            total += overlap
+    return total
 
 
 def _elapsed_seconds(record: dict[str, Any], reference: datetime) -> int:
@@ -459,6 +482,8 @@ class SettleReport:
     carried: Optional[tuple[str, str]] = None
     carry_shift_seconds: int = 0
     weekday_shifts: list[str] = field(default_factory=list)
+    # log pause 扣掉的空档：(归属任务名, 开始, 结束, 时长文本)
+    gaps: list[tuple[str, str, str, str]] = field(default_factory=list)
 
 
 def _validate_chain(unfinished: list[dict[str, Any]]) -> Optional[dict[str, Any]]:
@@ -494,6 +519,7 @@ def _flatten(
     co: dict[str, Any],
     t_end: datetime,
     carry_id: str,
+    gaps: dict[str, list[tuple[datetime, datetime]]],
 ) -> tuple[list[_Segment], datetime]:
     """
     后序展平一棵虚拟任务子树。
@@ -505,6 +531,9 @@ def _flatten(
 
     carry_id 指向活跃链链首：那棵子树整体顺延给结算后新建的真实任务，
     不参与本次展平，但仍要把右端点报给父级，父级才能正确扣时长。
+
+    gaps 是 log pause 记下的空档，按归属节点分组：它像一个「不产出任务的子节点」，
+    只从占用里扣，不进 segments。
     """
     start = _parse_dt(co.get("start_time"))
     if start is None:
@@ -533,7 +562,7 @@ def _flatten(
         if child_start < start:
             raise SettleError(f"并发任务「{_name(child)}」的开始时间早于其父任务「{_name(co)}」。")
 
-        child_segments, child_end = _flatten(records, child, t_end, carry_id)
+        child_segments, child_end = _flatten(records, child, t_end, carry_id, gaps)
         segments.extend(child_segments)
         # 子树只有落在父级窗口内的那一段才从父级扣除；溢出的部分排在父级之后。
         # 取 max(0, ...) 是为了兜住零时长的父级（coend 的收口路径）：此时子级窗口
@@ -541,10 +570,12 @@ def _flatten(
         occupied += max(timedelta(), min(child_end, own_end) - child_start)
         subtree_end = max(subtree_end, child_end)
 
+    occupied += _gap_within(gaps.get(_co_id(co), []), start, own_end)
+
     self_duration = (own_end - start) - occupied
     if self_duration < timedelta(0):
         raise SettleError(
-            f"并发任务「{_name(co)}」的子任务总时长超过了它自身的时长；"
+            f"并发任务「{_name(co)}」的子任务与暂停的总时长超过了它自身的时长；"
             "这违反了并发任务的嵌套规则，可能是 uncommit_tasks.txt 被手工改过。"
         )
 
@@ -603,13 +634,15 @@ def settle_on_end(
     rng: Optional[random.Random] = None,
 ) -> tuple[list[dict[str, Any]], Optional[SettleReport]]:
     """
-    在 log end 写盘之前结算并发任务。
+    在 log end 写盘之前结算并发任务与暂停空档。
 
     调用约定：records[active_index] 的 end_time 已经填好（可能是 AI 解析出的历史时间）。
     本函数会就地把它改短，并返回新的 records 列表；抛 SettleError 时调用方必须放弃写盘。
 
-    没有并发任务时原样返回，report 为 None。
+    两者都没有时原样返回，report 为 None。
     """
+    from pause import PAUSE_TYPE, active_pause, gap_windows, live_pauses
+
     rng = rng or _DEFAULT_RNG
     root = records[active_index]
     root_id = str(root.get("session_id") or "")
@@ -617,7 +650,8 @@ def settle_on_end(
         return records, None
 
     live = _live_co_records(records, root_id)
-    if not live:
+    live_gaps = live_pauses(records, root_id)
+    if not live and not live_gaps:
         return records, None
 
     root_start = _parse_dt(root.get("start_time"))
@@ -640,6 +674,28 @@ def settle_on_end(
                 "稍等片刻再 log end 即可。"
             )
 
+    # 暂停必须先收口再结算：「暂停到一半就把任务结束了」这段时间算不算工作没有明确
+    # 答案，静默按任一种处理都会悄悄吃掉时长，宁可让用户先 log resume。
+    if active_pause(records, root_id) is not None:
+        raise SettleError(
+            "有一次暂停还没有 resume，无法结算。\n请先执行 log resume 结束暂停，再 log end。"
+        )
+
+    for record in live_gaps:
+        start = _parse_dt(record.get("start_time"))
+        end = _parse_dt(record.get("end_time"))
+        if start is None or end is None:
+            raise SettleError(f"暂停记录的时间不合法：{record.get('start_time')!r} ~ {record.get('end_time')!r}")
+        if start < root_start:
+            raise SettleError("有一次暂停的开始时间早于顶层任务的开始时间，无法结算。")
+        if end > t_end:
+            raise SettleError(
+                f"有一次暂停结束于 {record.get('end_time')}，晚于本次 log end 的结束时间 "
+                f"{t_end.isoformat(timespec='seconds')}。请改用更晚的结束时间。"
+            )
+
+    gaps = gap_windows(records, root_id)
+
     carry = _validate_chain([record for record in live if record.get("end_time") is None])
     carry_id = _co_id(carry) if carry is not None else ""
 
@@ -650,33 +706,74 @@ def settle_on_end(
         child_start = _parse_dt(child.get("start_time"))
         if child_start is None:
             raise SettleError(f"并发任务「{_name(child)}」的开始时间不合法。")
-        child_segments, child_end = _flatten(records, child, t_end, carry_id)
+        child_segments, child_end = _flatten(records, child, t_end, carry_id, gaps)
         segments.extend(child_segments)
         occupied += max(timedelta(), min(child_end, t_end) - child_start)
+
+    # 挂在顶层任务上的暂停（log pause 时没有并发任务在跑）直接从顶层扣。
+    occupied += _gap_within(gaps.get(root_id, []), root_start, t_end)
 
     root_net = (t_end - root_start) - occupied
     if root_net < timedelta(0):
         raise SettleError(
-            "并发任务的总时长超过了顶层任务本身的时长；"
+            "并发任务与暂停的总时长超过了顶层任务本身的时长；"
             "这违反了并发任务的嵌套规则，可能是 uncommit_tasks.txt 被手工改过。"
         )
 
     # 连通性校验：孤立的虚拟记录（parent 指向不存在的节点）不会被展平到，
     # 留在文件里会永远变成幽灵数据，宁可现在报错。
     reachable = {_co_id(segment.co) for segment in segments}
+    carried_ids: set[str] = set()
     if carry is not None:
-        reachable.add(carry_id)
-        reachable.update(_co_id(node) for node in _subtree(records, carry))
+        carried_ids.add(carry_id)
+        carried_ids.update(_co_id(node) for node in _subtree(records, carry))
+        reachable |= carried_ids
     orphans = [record for record in live if _co_id(record) not in reachable]
     if orphans:
         names = "、".join(_name(record) for record in orphans)
         raise SettleError(f"这些并发任务挂在不存在的父级上，无法结算：{names}。")
+
+    # 暂停也要能找到归属：顶层任务、本次落成的某一段，或者跟着活跃链顺延下去。
+    gap_hosts = reachable | {root_id}
+    gap_orphans = [
+        record for record in live_gaps if str(record.get("parent_id") or "") not in gap_hosts
+    ]
+    if gap_orphans:
+        raise SettleError(
+            f"有 {len(gap_orphans)} 条暂停记录挂在不存在的任务上，无法结算；"
+            "可能是 uncommit_tasks.txt 被手工改过。"
+        )
+
+    # 挂在活跃链上的暂停留到下次结算。这里就得定下来：下面平移那一步会把它们的
+    # parent_id 改写成新的 session_id，改完就认不出它们原本挂在活跃链上了。
+    carried_gaps = [
+        record for record in live_gaps if str(record.get("parent_id") or "") in carried_ids
+    ]
+    carried_gap_ids = {str(record.get("pause_id") or "") for record in carried_gaps}
 
     report = SettleReport(
         root_name=str(root.get("canonical_task_name") or root.get("task_name") or "未命名任务"),
         root_old_end=t_end.isoformat(timespec="seconds"),
         root_new_end="",
     )
+
+    host_names = {root_id: report.root_name}
+    host_names.update({_co_id(segment.co): _name(segment.co) for segment in segments})
+    for record in live_gaps:
+        parent_id = str(record.get("parent_id") or "")
+        if str(record.get("pause_id") or "") in carried_gap_ids:
+            continue  # 跟着活跃链顺延，本次不结算，留到下一次
+        gap_start = _parse_dt(record.get("start_time"))
+        gap_end = _parse_dt(record.get("end_time"))
+        assert gap_start is not None and gap_end is not None  # 上面已逐条校验过
+        report.gaps.append(
+            (
+                host_names.get(parent_id, str(record.get("parent_name") or "当前任务")),
+                str(record.get("start_time") or ""),
+                str(record.get("end_time") or ""),
+                _format_duration_seconds(max(0, int((gap_end - gap_start).total_seconds()))),
+            )
+        )
 
     # 2. 铺时间轴：顶层任务的净时长在最前，已结束的段依次跟上，段间插随机间隔
     cursor = root_start + root_net
@@ -731,7 +828,11 @@ def settle_on_end(
                 f"{_name(carry)}：{_weekday_of(carry_real_start)} → {_weekday_of(carry_start)}"
             )
 
-        for node in _subtree(records, carry):
+        # 顺延过去的这一群里也可能挂着暂停记录：它们要跟着一起平移，否则下一次结算时
+        # 会落在（已经挪走的）任务窗口之外，那段空档就白扣了。
+        carried_nodes: list[dict[str, Any]] = list(_subtree(records, carry))
+        carried_nodes.extend(carried_gaps)
+        for node in carried_nodes:
             for key in ("start_time", "end_time"):
                 moment = _parse_dt(node.get(key))
                 if moment is not None:
@@ -748,10 +849,18 @@ def settle_on_end(
     consumed = {_co_id(segment.co) for segment in segments}
     if carry is not None:
         consumed.add(carry_id)
+    # 已经扣进时长里的暂停记录用完即弃；跟着活跃链顺延的那些留到下次结算。
+    consumed_gaps = {
+        str(record.get("pause_id") or "")
+        for record in live_gaps
+        if str(record.get("pause_id") or "") not in carried_gap_ids
+    }
 
     result: list[dict[str, Any]] = []
     for record in records:
         if record.get("type") == CO_TYPE and _co_id(record) in consumed:
+            continue
+        if record.get("type") == PAUSE_TYPE and str(record.get("pause_id") or "") in consumed_gaps:
             continue
         if record is root:
             # 落成的已结束任务插在顶层任务**之前**：这样文件里最后一条已结束的记录
@@ -769,13 +878,18 @@ def settle_on_end(
 
 def render_settle_report(report: SettleReport) -> None:
     """log end 结算完之后打印重排结果。"""
+    # 只有暂停、没有并发任务时（纯 log pause 的场景）换个说法，免得答非所问。
+    co_involved = bool(report.materialized or report.carried)
+    title = "并发任务已结算" if co_involved else "暂停已结算"
     if not RICH_AVAILABLE:
-        print("并发任务已结算")
+        print(title)
         print(f"{report.root_name}: 结束时间 {report.root_old_end} → {report.root_new_end}")
         for name, start, end in report.materialized:
             print(f"  {name}: {start} ~ {end}")
         if report.carried:
             print(f"  {report.carried[0]}: {report.carried[1]} ~ 进行中")
+        for host, start, end, duration in report.gaps:
+            print(f"  暂停（已扣除）: {host} {start} ~ {end}  {duration}")
         for line in report.weekday_shifts:
             print(f"  周几归属变化: {line}")
         return
@@ -792,10 +906,26 @@ def render_settle_report(report: SettleReport) -> None:
         table.add_row(report.carried[0], report.carried[1], Text("进行中", style="bold yellow"))
 
     note = (
-        "并发任务已展平重排：顶层任务扣掉并发占用的时间，各并发任务依次排在其后，"
-        "段间留 10~60 秒随机间隔。"
+        (
+            "并发任务已展平重排：顶层任务扣掉并发占用的时间，各并发任务依次排在其后，"
+            "段间留 10~60 秒随机间隔。"
+        )
+        if co_involved
+        else "顶层任务已扣掉暂停占用的时间。"
     )
     body: list[Any] = [Text(note, style="dim"), "", table]
+    if report.gaps:
+        lines = [
+            f"· {host}：{start} ~ {end}　（{duration}）"
+            for host, start, end, duration in report.gaps
+        ]
+        body.extend(
+            [
+                "",
+                Text("log pause 的空档已从对应任务的时长里扣除，不产出任何任务：", style="yellow"),
+                Text("\n".join(lines), style="yellow"),
+            ]
+        )
     if report.carried:
         lines = [f"「{report.carried[0]}」已落成真实任务并仍在进行；结束它请用 log end。"]
         if report.carry_shift_seconds:
@@ -816,7 +946,7 @@ def render_settle_report(report: SettleReport) -> None:
     console.print(
         Panel(
             Group(*body),
-            title=Text("并发任务已结算", style="bold magenta"),
+            title=Text(title, style="bold magenta"),
             border_style="magenta",
             box=box.ROUNDED,
             expand=False,

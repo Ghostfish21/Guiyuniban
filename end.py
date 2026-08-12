@@ -598,15 +598,15 @@ def end_task(raw_time: str, context: dict[str, str]) -> int:
     active_record["updated_at"] = now_iso(context)
     records[active_index] = active_record
 
-    # 并发任务（log costart）在这里一次性结算：展平重排会把 active_record 的 end_time
-    # 改短、并落成若干条真实任务，所以必须排在渲染和写盘之前。
+    # 并发任务（log costart）与暂停空档（log pause）在这里一次性结算：展平重排会把
+    # active_record 的 end_time 改短、并落成若干条真实任务，所以必须排在渲染和写盘之前。
     # 结算失败时整次 log end 都不落盘，宁可让用户重来，也不要写出半套时间轴。
     from costart import SettleError, render_settle_report, settle_on_end
 
     try:
         records, co_report = settle_on_end(records, active_index, context)
     except SettleError as exc:
-        _render_error("并发任务结算失败", f"{exc}\n\n本次 log end 未写入任何改动。")
+        _render_error("并发任务 / 暂停结算失败", f"{exc}\n\n本次 log end 未写入任何改动。")
         return 1
 
     write_txt_records(context["uncommit_file"], records)

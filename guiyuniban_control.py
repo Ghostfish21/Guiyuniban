@@ -101,6 +101,13 @@ HELP_TEXT = """
       结束一个并发任务；有多个在进行时弹窗选择。
       结束顺序不影响结果，时间轴统一在 log end 时排定。
 
+  log pause
+      暂停当前任务（含所有层的并发任务）：弹出全屏置顶窗口，点 resume 才结束。
+      这段时间在 log end 时从任务时长里扣掉，不产出任何任务。
+
+  log resume
+      命令行结束暂停。正常用窗口上的 resume 即可，这条是窗口被强杀时的收口手段。
+
   log commit
       让 LLM 校准所有未 commit 任务，追加进 committed 池（累积，不覆盖池内已有任务）；
       同时把这批任务从未 commit 池排干
@@ -213,6 +220,8 @@ def print_app_help() -> None:
     commands.add_row("log end", "[时间]", "结束当前任务；不写时间时使用当前系统时间")
     commands.add_row("log costart", "任务名", "在进行中的任务之上再开一个并发任务，可层层嵌套")
     commands.add_row("log coend", "", "结束一个并发任务；多个在进行时弹窗选择")
+    commands.add_row("log pause", "", "全屏置顶暂停；这段空档在 log end 时从任务时长里扣掉")
+    commands.add_row("log resume", "", "命令行结束暂停（窗口被强杀时的收口手段）")
     commands.add_row("log commit", "", "校准未 commit 任务并追加进 committed 池（累积，不覆盖）")
     commands.add_row("log chat", "中文指令", "让 LLM 按中文指令修改 committed 池，逐条 y/n 审核")
     commands.add_row("log desc", "", "commit 前编辑任务描述（上=任务信息，下=描述编辑）")
@@ -424,6 +433,22 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=_formatter_class(),
     )
 
+    # log pause
+    subparsers.add_parser(
+        "pause",
+        help="暂停当前任务，弹出全屏置顶窗口，点 resume 结束",
+        allow_abbrev=False,
+        formatter_class=_formatter_class(),
+    )
+
+    # log resume
+    subparsers.add_parser(
+        "resume",
+        help="命令行结束暂停（窗口被强杀时的收口手段）",
+        allow_abbrev=False,
+        formatter_class=_formatter_class(),
+    )
+
     # log commit
     subparsers.add_parser(
         "commit",
@@ -569,6 +594,17 @@ def dispatch(args: argparse.Namespace, context: dict[str, str]) -> int:
         from costart import coend_task
 
         return coend_task(context=context)
+
+    if args.command == "pause":
+        from pause import pause_task
+
+        # 暂停不是任务：不触发成就、不进 status，只在 log end 结算时扣出一个空档。
+        return pause_task(context=context)
+
+    if args.command == "resume":
+        from pause import resume_task
+
+        return resume_task(context=context)
 
     if args.command == "commit":
         from summary import commit_tasks
